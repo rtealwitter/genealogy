@@ -2,16 +2,14 @@
 import { jsPDF } from "./vendor/jspdf.es.min.js";
 
 const C = {
-  paper: "#faf9f5",
-  ink: "#272e2b",
-  muted: "#67716a",
-  line: "#aaaFA7",
-  burgundy: "#793e48",
-  teal: "#2d706b",
-  pale: "#edf3f0",
-  white: "#ffffff",
-  border: "#d4d9d2",
+  paper: "#fcfaf5",
+  ink: "#34323e",
+  muted: "#84818a",
+  line: "#c5bdce",
+  plum: "#9e7c0a",
+  border: "#ded9e2",
 };
+const NAME_SIZE = 16;
 let fontsPromise;
 function fontData() {
   if (!fontsPromise)
@@ -41,6 +39,17 @@ function fontData() {
 }
 
 function pageSize(layout, size) {
+  if (size === "readable") {
+    const scale = Math.min(
+      11 / NAME_SIZE,
+      (14400 - 144) / layout.width,
+      (14400 - 308) / layout.height,
+    );
+    return [
+      Math.max(720, layout.width * scale + 144),
+      Math.max(600, layout.height * scale + 308),
+    ];
+  }
   if (size === "a1") return [(841 * 72) / 25.4, (594 * 72) / 25.4];
   if (size === "auto") {
     // Fit the graph and fixed margins inside a 36-inch long edge.
@@ -54,6 +63,17 @@ function pageSize(layout, size) {
     ];
   }
   return [36 * 72, 24 * 72];
+}
+
+export function getPosterMetrics(layout, size) {
+  const [width, height] = pageSize(layout, size);
+  return {
+    width: width / 72,
+    height: height / 72,
+    nameSize:
+      NAME_SIZE *
+      Math.min((width - 144) / layout.width, (height - 308) / layout.height),
+  };
 }
 
 const clean = (value) =>
@@ -91,7 +111,7 @@ async function drawPoster(layout, options = {}) {
     doc.addFileToVFS(file, fonts[i]);
     doc.addFont(file, "Genealogy", style);
   });
-  const title = clean(options.title || "A shared mathematical ancestry");
+  const title = clean(options.title || "PhD Genealogy Tree");
   doc.setProperties({
     title,
     subject: "Academic advisor genealogy",
@@ -99,20 +119,8 @@ async function drawPoster(layout, options = {}) {
     keywords: "mathematics, genealogy, advisors",
   });
   const svg = [];
-  function rect(x, y, w, h, fill, stroke, radius = 0, lineWidth = 0.8) {
-    doc.setFillColor(fill);
-    if (stroke) {
-      doc.setDrawColor(stroke);
-      doc.setLineWidth(lineWidth);
-    }
-    if (radius)
-      doc.roundedRect(x, y, w, h, radius, radius, stroke ? "FD" : "F");
-    else doc.rect(x, y, w, h, stroke ? "FD" : "F");
-    svg.push(
-      `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${radius}" fill="${fill}" stroke="${stroke || "none"}" stroke-width="${lineWidth}"/>`,
-    );
-  }
   function path(points, color, lineWidth) {
+    doc.setLineDashPattern([], 0);
     if (points.length < 2) return;
     doc.setDrawColor(color);
     doc.setLineWidth(lineWidth);
@@ -126,6 +134,43 @@ async function drawPoster(layout, options = {}) {
     );
     svg.push(
       `<polyline points="${points.map((p) => `${p.x},${p.y}`).join(" ")}" fill="none" stroke="${color}" stroke-width="${lineWidth}" stroke-linejoin="round"/>`,
+    );
+  }
+  function circle(x, y, radius, color, hollow = false) {
+    doc.setLineDashPattern([], 0);
+    doc.setFillColor(hollow ? C.paper : color);
+    doc.setDrawColor(color);
+    doc.setLineWidth(Math.max(0.4, radius * 0.35));
+    doc.circle(x, y, radius, "FD");
+    svg.push(
+      `<circle cx="${x}" cy="${y}" r="${radius}" fill="${hollow ? C.paper : color}" stroke="${color}" stroke-width="${Math.max(0.4, radius * 0.35)}"/>`,
+    );
+  }
+  function curve(points, color, lineWidth) {
+    if (points.length < 2) return;
+    doc.setLineDashPattern([], 0);
+    doc.setDrawColor(color);
+    doc.setLineWidth(lineWidth);
+    const first = points[0];
+    const segments = [];
+    const commands = [`M${first.x},${first.y}`];
+    for (let i = 1; i < points.length; i++) {
+      const from = points[i - 1],
+        to = points[i];
+      const middleY = (from.y + to.y) / 2;
+      segments.push([
+        0,
+        middleY - from.y,
+        to.x - from.x,
+        middleY - from.y,
+        to.x - from.x,
+        to.y - from.y,
+      ]);
+      commands.push(`C${from.x},${middleY} ${to.x},${middleY} ${to.x},${to.y}`);
+    }
+    doc.lines(segments, first.x, first.y, [1, 1], "S", false);
+    svg.push(
+      `<path d="${commands.join(" ")}" fill="none" stroke="${color}" stroke-width="${lineWidth}" stroke-linecap="round"/>`,
     );
   }
   function text(
@@ -156,43 +201,43 @@ async function drawPoster(layout, options = {}) {
       (fontSize * maxWidth) / Math.max(1, doc.getTextWidth(content)),
     );
   }
-  function truncate(value, fontSize, maxWidth) {
-    doc.setFont("Genealogy", "normal");
-    doc.setFontSize(fontSize);
-    let content = clean(value);
-    if (doc.getTextWidth(content) <= maxWidth) return content;
-    while (content && doc.getTextWidth(`${content}…`) > maxWidth)
-      content = content.slice(0, -1);
-    return `${content.trim()}…`;
-  }
-
   const margin = 72;
-  rect(0, 0, width, height, C.paper);
-  rect(margin, 57, 32, 3, C.burgundy);
-  text("MATHEMATICAL GENEALOGY", margin + 44, 63, 11, C.muted, true);
+  doc.setFillColor(C.paper);
+  doc.rect(0, 0, width, height, "F");
+  svg.push(`<rect width="${width}" height="${height}" fill="${C.paper}"/>`);
   text(
     title,
-    margin,
-    116,
+    width / 2,
+    106,
     fit(title, 40, width - margin * 2, true),
     C.ink,
     true,
+    "center",
   );
   const subtitle = clean(
-    options.subtitle ||
-      "People, advisors, and the ideas passed between generations.",
+    options.subtitle || "A shared history of people and their advisors",
   );
-  text(subtitle, margin, 145, fit(subtitle, 14, width - margin * 2), C.muted);
+  text(
+    subtitle,
+    width / 2,
+    137,
+    fit(subtitle, 12, width - margin * 2),
+    C.muted,
+    false,
+    "center",
+  );
   const legendY = 175;
-  rect(margin, legendY - 8, 9, 9, C.burgundy, undefined, 2);
-  text("Selected people", margin + 17, legendY, 10, C.muted);
-  rect(margin + 139, legendY - 8, 9, 9, C.teal, undefined, 2);
-  text("Shared ancestors", margin + 156, legendY, 10, C.muted);
+  ["#397d80", "#ad7059", "#6d7e46"].forEach((ink, index) =>
+    circle(margin + index * 7, legendY - 3, 2.4, ink),
+  );
+  text("Selected people", margin + 24, legendY, 9, C.muted);
+  circle(margin + 170, legendY - 3, 3, C.plum);
+  text("Shared ancestors", margin + 182, legendY, 9, C.muted);
   text(
     "Advisors above · students below",
     width - margin,
     legendY,
-    10,
+    9,
     C.muted,
     false,
     "right",
@@ -219,61 +264,100 @@ async function drawPoster(layout, options = {}) {
     x: offsetX + p.x * scale,
     y: offsetY + p.y * scale,
   });
-  for (const edge of layout.edges || [])
-    path((edge.points || []).map(mapPoint), C.line, Math.max(0.3, 0.9 * scale));
+  const color = (value) =>
+    /^#[0-9a-f]{6}$/i.test(value || "") ? value : C.plum;
+  const soften = (value) => {
+    const rgb = color(value)
+      .slice(1)
+      .match(/../g)
+      .map((part) => parseInt(part, 16));
+    return (
+      "#" +
+      rgb
+        .map((channel) =>
+          Math.round(channel * 0.38 + 252 * 0.62)
+            .toString(16)
+            .padStart(2, "0"),
+        )
+        .join("")
+    );
+  };
+  const byId = new Map(layout.nodes.map((node) => [node.id, node]));
+  for (const edge of layout.edges || []) {
+    const ink = edge.color || byId.get(edge.to)?.color;
+    curve(
+      (edge.points || []).map(mapPoint),
+      soften(ink),
+      Math.max(0.35, 1.05 * scale),
+    );
+  }
 
   for (const node of layout.nodes) {
     const person = node.person || node;
     const center = mapPoint(node),
       w = node.width * scale,
       h = node.height * scale;
-    const x = center.x - w / 2,
-      y = center.y - h / 2;
-    const ink = node.root ? C.white : node.shared ? C.teal : C.ink;
-    rect(
-      x,
-      y,
-      w,
-      h,
-      node.root ? C.burgundy : node.shared ? C.pale : C.white,
-      node.root ? C.burgundy : node.shared ? C.teal : C.border,
-      4 * scale,
-      0.8 * scale,
-    );
-    let nameSize = 12 * scale,
+    const y = center.y - h / 2;
+    const ink = color(node.color);
+    let nameSize = NAME_SIZE * scale,
       lines;
     const name = clean(person.name || "Unknown");
     // Preserve complete names; wrap and shrink only when they need extra space.
     do {
-      doc.setFont("Genealogy", "bold");
+      doc.setFont("Genealogy", node.root ? "bold" : "normal");
       doc.setFontSize(nameSize);
       lines = doc.splitTextToSize(name, w - 18 * scale);
-      if (lines.length <= 2) break;
+      if (lines.length <= 3) break;
       nameSize *= 0.9;
     } while (nameSize > 3 * scale);
-    const nameY = y + (lines.length === 1 ? 25 : 18) * scale;
+    const lineHeight = nameSize * 1.15;
+    const nameY =
+      y +
+      Math.max(
+        22 * scale,
+        (h - (lines.length - 1) * lineHeight) / 2 - 7 * scale,
+      );
+    circle(
+      center.x,
+      y + 5 * scale,
+      (node.root ? 3.6 : 2.5) * scale,
+      ink,
+      person.incomplete,
+    );
     lines.forEach((line, i) =>
       text(
         line,
         center.x,
-        nameY + i * nameSize * 1.14,
+        nameY + i * lineHeight,
         nameSize,
         ink,
-        true,
+        Boolean(node.root),
         "center",
       ),
     );
     const detail = [person.year, person.institution]
       .filter(Boolean)
       .join(" · ");
-    text(
-      truncate(detail, 8 * scale, w - 18 * scale),
-      center.x,
-      y + h - 12 * scale,
-      8 * scale,
-      node.root ? "#f0e4e6" : C.muted,
-      false,
-      "center",
+    let detailSize = 7.5 * scale,
+      detailLines;
+    do {
+      doc.setFont("Genealogy", "normal");
+      doc.setFontSize(detailSize);
+      detailLines = doc.splitTextToSize(clean(detail), w - 18 * scale);
+      if (detailLines.length <= 2) break;
+      detailSize *= 0.9;
+    } while (detailSize > 3 * scale);
+    const detailY = nameY + (lines.length - 1) * lineHeight + 14 * scale;
+    detailLines.forEach((line, index) =>
+      text(
+        line,
+        center.x,
+        detailY + index * detailSize * 1.2,
+        detailSize,
+        C.muted,
+        false,
+        "center",
+      ),
     );
   }
 
@@ -307,11 +391,18 @@ async function drawPoster(layout, options = {}) {
   const sourceDate = options.sourceDate
     ? `Source data: ${clean(options.sourceDate)} · `
     : "";
+  const incomplete = layout.nodes.filter(
+    (node) => node.person?.incomplete,
+  ).length;
+  const recordNote = incomplete
+    ? `${incomplete} open-circle records not yet retrieved. `
+    : "";
+  const footnote = `${sourceDate}Exported ${new Date().toISOString().slice(0, 10)} · ${recordNote}Historical records may be incomplete.`;
   text(
-    `${sourceDate}Exported ${new Date().toISOString().slice(0, 10)} · Historical records may be incomplete.`,
+    footnote,
     margin,
     height - 29,
-    8,
+    fit(footnote, 8, width - margin * 2),
     C.muted,
   );
 

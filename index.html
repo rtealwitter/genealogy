@@ -5,219 +5,178 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Explore the shared mathematical ancestry of Claremont McKenna's faculty. Follow advisors, discover connections, and print a genealogy poster."
+      content="Explore your shared mathematical ancestry. An interactive PhD genealogy tree with printable vector posters."
     />
-    <title>Genealogy · Mathematical lineages</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>PhD Genealogy Tree</title>
+    <link rel="stylesheet" href="style.css?v=2" />
   </head>
   <body>
-    <header class="masthead">
-      <a class="wordmark" href="./"
-        ><span class="mark" aria-hidden="true">g.</span> genealogy<span
-          class="wordmark-sub"
-          >An atlas of mathematical lineages</span
-        ></a
-      ><a
-        class="repo-link"
-        href="https://github.com/rtealwitter/genealogy"
-        target="_blank"
-        rel="noopener"
-        >About & source ↗</a
-      >
+    <header>
+      <h1>PhD Genealogy Tree</h1>
+      <div id="names-box" aria-label="People in this tree">
+        <div id="name-chips"></div>
+        <button
+          id="edit-open"
+          class="edit-button"
+          title="Edit names"
+          aria-label="Edit names"
+        >
+          <svg viewBox="0 0 24 24">
+            <path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15Z" />
+          </svg>
+        </button>
+      </div>
     </header>
-    <main>
-      <aside class="sidebar">
-        <div class="eyebrow">CONNECTED BY CURIOSITY</div>
-        <h1>Ideas have<br />ancestors.</h1>
-        <p class="intro">
-          Follow the people behind the mathematics. A shared history, one
-          advisor at a time.
-        </p>
-        <div class="section-label">01 <span>Start with a group</span></div>
-        <label for="preset" class="sr-only">Choose a starting group</label>
-        <select id="preset">
-          <option value="cmc">Claremont McKenna · Math sciences</option>
-          <option value="custom">Your own constellation</option>
-        </select>
-        <p class="hint" id="group-description">
-          Tenured and tenure-track faculty · 12 people
-        </p>
-        <details id="people-editor">
-          <summary>Edit people <span aria-hidden="true">+</span></summary>
-          <label for="names">One name or MGP ID per line</label>
-          <textarea
-            id="names"
-            rows="6"
-            spellcheck="false"
-            placeholder="R. Teal Witter&#10;Helen Wong"
-          ></textarea>
-          <p class="hint">
-            Enter any mathematicians’ names or MGP IDs. New lineages are fetched
-            live; large trees can take several minutes.
-          </p>
-          <button id="build" class="primary">
-            Build this genealogy <span aria-hidden="true">↗</span>
-          </button>
-          <p
-            id="lookup-status"
-            class="hint"
-            role="status"
-            aria-live="polite"
-          ></p>
-          <button id="lookup-cancel" hidden>Cancel lookup</button>
-          <div id="name-errors" role="alert"></div>
-          <label for="import" class="import-label"
-            >Import genealogy JSON <span aria-hidden="true">↑</span></label
-          ><input id="import" type="file" accept="application/json,.json" />
+    <main
+      id="graph"
+      tabindex="0"
+      aria-label="Genealogy tree. Drag to move, scroll to zoom. Click a person to highlight ancestry; click again or on empty space to clear. Plus and minus zoom, zero shows the overview."
+    >
+      <svg
+        id="graph-svg"
+        xmlns="http://www.w3.org/2000/svg"
+        role="group"
+        aria-label="Advisor relationships"
+      >
+        <g id="viewport"></g>
+      </svg>
+      <div id="loading" role="status">Loading the tree…</div>
+    </main>
+    <aside id="person-card" hidden aria-live="polite"></aside>
+    <nav class="tools" aria-label="Tree controls">
+      <button id="zoom-out" title="Zoom out" aria-label="Zoom out">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
+      </button>
+      <button id="zoom-in" title="Zoom in" aria-label="Zoom in">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5v14" /></svg>
+      </button>
+      <span class="separator"></span>
+      <button
+        id="home"
+        title="Return to your group"
+        aria-label="Return to your group"
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="m3 11 9-8 9 8M6 9v11h12V9M10 20v-6h4v6" />
+        </svg>
+      </button>
+      <button
+        id="fit"
+        title="View the whole tree"
+        aria-label="View the whole tree"
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M9 4H4v5M15 4h5v5M4 15v5h5M20 15v5h-5" />
+        </svg>
+      </button>
+      <span class="separator"></span>
+      <button id="poster-open" title="Export poster" aria-label="Export poster">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" />
+        </svg>
+      </button>
+      <button
+        id="options-open"
+        title="Search and options"
+        aria-label="Search and options"
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M4 7h16M4 17h16" />
+          <circle cx="9" cy="7" r="3" />
+          <circle cx="15" cy="17" r="3" />
+        </svg>
+      </button>
+    </nav>
+    <dialog id="edit-dialog">
+      <form method="dialog">
+        <button class="dialog-close" aria-label="Close">×</button>
+      </form>
+      <label for="names">People in your tree</label
+      ><textarea
+        id="names"
+        rows="12"
+        spellcheck="false"
+        placeholder="One name or MGP ID per line"
+      ></textarea>
+      <div class="dialog-actions">
+        <button id="reset">CMC faculty</button
+        ><button id="build" class="primary">
+          Update tree <span aria-hidden="true">↗</span>
+        </button>
+      </div>
+      <p id="lookup-status" class="status" role="status"></p>
+      <button id="lookup-cancel" hidden>Cancel lookup</button>
+      <div id="name-errors" class="status error" role="alert"></div>
+      <label class="file-label" for="import"
+        >Import JSON <span aria-hidden="true">↑</span
+        ><input id="import" type="file" accept=".json,application/json"
+      /></label>
+    </dialog>
+    <dialog id="options-dialog">
+      <form method="dialog">
+        <button class="dialog-close" aria-label="Close">×</button>
+      </form>
+      <label for="find">Find a person</label
+      ><input id="find" type="search" placeholder="Name…" autocomplete="off" />
+      <div id="search-results"></div>
+      <label class="toggle"
+        ><input id="shared-only" type="checkbox" /> Shared connections
+        only</label
+      ><label for="depth" class="depth-label"
+        >Generations <span id="depth-value">All</span></label
+      ><input id="depth" type="range" min="1" max="25" value="25" />
+      <div id="data-notes" class="quiet"></div>
+      <details>
+        <summary>Sources & about</summary>
+        <p class="quiet">
+          Advisor relationships from the
           <a
-            class="text-link"
-            href="https://github.com/rtealwitter/genealogy#adding-new-people"
+            href="https://www.mathgenealogy.org/"
             target="_blank"
             rel="noopener"
-            >How to add someone new ↗</a
+            >Mathematics Genealogy Project</a
           >
-        </details>
-        <div class="section-label">02 <span>Explore the connections</span></div>
-        <label for="find" class="sr-only">Find a person in this graph</label
-        ><input
-          id="find"
-          type="search"
-          placeholder="Find a person in the graph…"
-          autocomplete="off"
-        />
-        <div id="search-results"></div>
-        <label class="toggle"
-          ><input id="shared-only" type="checkbox" /><span
-            >Shared connections only</span
-          ></label
+          and cited faculty records. Select a person for sources. Historical
+          links may represent mentorship; a branch ending means the included
+          record stops there.
+        </p>
+        <p class="quiet">
+          Default group: CMC’s tenured and tenure-track Mathematical Sciences
+          faculty, including Mike Izbicki via his CV and Christian Shelton’s MGP
+          ancestry.
+        </p>
+        <a
+          class="quiet"
+          href="https://github.com/rtealwitter/genealogy"
+          target="_blank"
+          rel="noopener"
+          >Source code ↗</a
         >
-        <label for="depth" class="depth-label"
-          >Generations <span id="depth-value">All</span></label
-        ><input id="depth" type="range" min="1" max="25" value="25" />
-        <div class="legend">
-          <span><i class="dot root"></i>Your group</span
-          ><span><i class="dot shared"></i>Shared ancestor</span
-          ><span><i class="dot"></i>Ancestor</span>
-        </div>
-        <div id="person-card" class="person-card">
-          <div class="eyebrow">FOLLOW A THREAD</div>
-          <p>
-            Select a person to illuminate their ancestors and see where their
-            lineages meet.
-          </p>
-        </div>
-        <div class="sidebar-bottom">
-          <button id="poster-open" class="poster-button">
-            ↓ <span>Make a poster</span><span class="badge">PDF / SVG</span>
-          </button>
-          <p class="credit">
-            Built from the
-            <a
-              href="https://www.mathgenealogy.org/"
-              target="_blank"
-              rel="noopener"
-              >Mathematics Genealogy Project</a
-            >
-            and faculty sources.
-            <button id="sources-open" class="inline-button">
-              About the data
-            </button>
-          </p>
-        </div>
-      </aside>
-      <section class="canvas-section" aria-label="Interactive genealogy">
-        <div class="canvas-top">
-          <div>
-            <span class="eyebrow" id="graph-kicker">THE CMC CONSTELLATION</span>
-            <h2 id="graph-title">A shared mathematical history</h2>
-          </div>
-          <div id="stats" class="stats" aria-live="polite"></div>
-        </div>
-        <div
-          id="graph"
-          tabindex="0"
-          aria-label="Genealogy diagram. Drag to pan, scroll to zoom. Use plus and minus keys to zoom, arrow keys to pan, and zero to fit."
-        >
-          <svg
-            id="graph-svg"
-            xmlns="http://www.w3.org/2000/svg"
-            role="img"
-            aria-label="Mathematical advisor relationships"
-          >
-            <g id="viewport"></g>
-          </svg>
-          <div id="loading" role="status">Tracing the first connections…</div>
-        </div>
-        <div class="canvas-bottom">
-          <span id="canvas-help"
-            >Drag to explore <b>·</b> Scroll to zoom <b>·</b> Click a name to
-            trace its lineage</span
-          >
-          <div class="zoom-controls">
-            <button id="zoom-out" aria-label="Zoom out">−</button
-            ><span id="zoom-level">100%</span
-            ><button id="zoom-in" aria-label="Zoom in">+</button
-            ><button id="fit">Fit all</button
-            ><button id="clear" title="Clear highlighted lineage">Clear</button>
-          </div>
-        </div>
-      </section>
-    </main>
+      </details>
+    </dialog>
     <dialog id="poster-dialog">
       <form method="dialog">
         <button class="dialog-close" aria-label="Close">×</button>
       </form>
-      <div class="eyebrow">FROM SCREEN TO STUDIO</div>
-      <h2>A history worth hanging.</h2>
-      <p>
-        Export the current graph as a crisp, single-page vector poster. Your
-        generation and shared-ancestry filters carry through.
-      </p>
       <label for="poster-title">Poster title</label
       ><input
         id="poster-title"
-        value="A shared mathematical history"
+        value="PhD Genealogy Tree"
         maxlength="100"
       /><label for="poster-size">Paper size</label
       ><select id="poster-size">
-        <option value="auto">Fit to graph · 36-inch long edge</option>
-        <option value="arch-e">36 × 24 inches · landscape</option>
-        <option value="a1">A1 · landscape</option>
+        <option value="readable">Size to fit · readable names</option>
+        <option value="auto">36-inch long edge</option>
+        <option value="arch-d">36 × 24 inches</option>
+        <option value="a1">A1 landscape</option>
       </select>
-      <p class="hint">
-        Automatic sizing keeps the proportions of your graph. Vector artwork
-        stays sharp at any print size.
-      </p>
-      <div class="export-actions">
-        <button id="pdf" class="primary">Download PDF ↓</button
-        ><button id="svg-export">Download SVG ↓</button>
+      <p id="poster-dimensions" class="quiet"></p>
+      <div class="dialog-actions">
+        <button id="svg-export">SVG ↓</button
+        ><button id="pdf" class="primary">Download PDF ↓</button>
       </div>
-      <p id="export-status" role="status"></p>
+      <p id="export-status" class="status" role="status"></p>
     </dialog>
-    <dialog id="sources-dialog">
-      <form method="dialog">
-        <button class="dialog-close" aria-label="Close">×</button>
-      </form>
-      <div class="eyebrow">A NOTE ON THE RECORD</div>
-      <h2>Every connection has a source.</h2>
-      <div id="data-notes"></div>
-      <p>
-        Lines run from advisor (above) to student (below). Multiple advisors are
-        retained. A branch ending means the included record stops there; it does
-        not establish that the person had no advisor. Historical relationships
-        in MGP can include mentorship rather than modern PhD supervision.
-      </p>
-      <p>
-        The default roster follows CMC’s regular faculty listing, excluding
-        visiting and emeritus sections. Select a person for their sources.
-      </p>
-      <a
-        href="https://www.cmc.edu/mathematics/math-faculty"
-        target="_blank"
-        rel="noopener"
-        >CMC faculty directory ↗</a
-      >
-    </dialog>
-    <script type="module" src="app.js"></script>
+    <script type="module" src="app.js?v=2"></script>
   </body>
 </html>

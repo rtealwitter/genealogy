@@ -4,13 +4,13 @@ An interactive atlas of mathematical advisor relationships, with Claremont McKen
 
 **[Explore the website](https://www.rtealwitter.com/genealogy/)**
 
-Drag to pan, scroll to zoom, and click a person to trace their ancestry. Multiple advisors and shared ancestors are preserved. Search within the graph, choose a generation limit, or focus on shared ancestry. Each person links to the sources for their record.
+Drag to pan, scroll to zoom, and click a person or their name chip to focus their ancestry. Click the same person again, or empty background, to restore everyone. Multiple advisors and shared ancestors are preserved. Search within the graph, choose a generation limit, or focus on shared ancestry. Each person links to the sources for their record.
 
-**Make a poster** exports the current graph as a single-page vector PDF or SVG: 36 × 24 inches, A1, or a size proportional to the graph. PDF names remain searchable and accented characters are embedded. A large graph may need larger paper for comfortable reading; the vector files scale without losing sharpness.
+The **Export poster** button exports the current graph as a single-page vector PDF or SVG: a size that keeps names readable, 36 × 24 inches, A1, or a proportional 36-inch sheet. The dialog shows the paper dimensions and approximate text size before downloading. PDF names remain searchable and accented characters are embedded. A large graph may need larger paper for comfortable reading; the vector files scale without losing sharpness.
 
 ## Adding new people
 
-Open **Edit people**, enter one name or Mathematics Genealogy Project ID per line, and select **Build this genealogy**. Existing records load immediately. New names are looked up through a small Cloudflare Worker; ambiguous matches ask you to choose a person. The importer follows every listed advisor, stopping at already included ancestry.
+Open the pencil button (**Edit names**), enter one name or Mathematics Genealogy Project ID per line, and select **Update tree**. Existing records load immediately. New names are looked up through a small Cloudflare Worker; ambiguous matches ask you to choose a person. The importer follows every listed advisor, stopping at already included ancestry.
 
 Math Genealogy requests are cached and spaced at least ten seconds apart. An entirely new tree can take several minutes. Cancel leaves the current graph intact. A lookup retrieves at most 150 new records and 30 new generations at once; unfinished records are marked, and building the same group again continues them. The default CMC group is bundled with the site, so it works even when live lookup is unavailable.
 

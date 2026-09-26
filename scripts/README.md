@@ -1,6 +1,6 @@
 # Updating the data
 
-The website is a static snapshot. It cannot fetch MGP directly from a browser: MGP does not provide the cross-origin API a static site would need. Use this small local importer to create a JSON file, then import that file in the website.
+The website opens with a bundled snapshot and supports live lookup through its backend. This local importer is an alternative for building a complete, reproducible group at your own pace: create a JSON file, then import that file in the website.
 
 ```sh
 python -m pip install -r requirements.txt
@@ -21,6 +21,6 @@ python scripts/fetch_genealogy.py --overlay data/cmc-roots.json --output data/ge
 
 `data/cmc-roots.json` holds the selected faculty and sourced additions where MGP has no record. Update these manually from cited primary sources when the roster changes. The importer does not infer advisors from dissertation committee memberships or postdoctoral mentors.
 
-The JSON format is `{title, description, updated, defaultRoots, people}`. Each person has a stable `id`, `name`, `year` (nullable), `institution`, `advisors` (IDs), and `sources` (`{label,url}` pairs). MGP records also have `mgpId`. Optional fields include `aliases`, `role`, `note`, and `incomplete`. Each advisor edge is substantiated by the **student's** sources. Empty advisors mean the snapshot has no documented advisor; they do not establish that a person had no advisor. Historical MGP relationships are not necessarily modern PhD supervision, and records may contain errors. `rosterSource`, `rosterNote`, and `warnings` provide collection-level context.
+The JSON format is `{title, description, updated, defaultRoots, people}`. Each person has a stable `id`, `name`, `year` (nullable), `institution`, `advisors` (IDs), and `sources` (`{label,url}` pairs). MGP records also have `mgpId`. Optional fields include `aliases`, `role`, `note`, and `incomplete`. Seed files may set `preferredName`; the importer uses it as the display name and preserves the MGP name in `aliases`. Each advisor edge is substantiated by the **student's** sources. Empty advisors mean the snapshot has no documented advisor; they do not establish that a person had no advisor. Historical MGP relationships are not necessarily modern PhD supervision, and records may contain errors. `rosterSource`, `rosterNote`, and `warnings` provide collection-level context.
 
 This project is independent of the Mathematics Genealogy Project. Please cite and support [MGP](https://www.mathgenealogy.org/) when using its records.

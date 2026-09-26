@@ -9,6 +9,7 @@ import time
 from collections import deque
 from datetime import date
 from pathlib import Path
+from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -35,10 +36,26 @@ class MGP:
         target = self.cache / (key + '.html')
         if target.exists():
             return BeautifulSoup(target.read_text(), 'html.parser')
-        time.sleep(max(0, self.last_request + self.delay - time.monotonic()))
-        self.last_request = time.monotonic()
-        response = self.session.post(BASE + path, data=data, timeout=30) if data else self.session.get(BASE + path, timeout=30)
-        response.raise_for_status()
+        url = BASE + path
+        method = 'POST' if data else 'GET'
+        for _ in range(6):
+            parsed = urlparse(url)
+            if parsed.scheme != 'https' or parsed.netloc != 'www.mathgenealogy.org' or parsed.path not in ['/query-prep.php', '/results.php', '/id.php']:
+                raise ValueError('Unexpected MGP redirect; refusing to follow it.')
+            time.sleep(max(0, self.last_request + self.delay - time.monotonic()))
+            self.last_request = time.monotonic()
+            response = self.session.request(method, url, data=data if method == 'POST' else None, timeout=30, allow_redirects=False)
+            response.raise_for_status()
+            if response.status_code not in (301, 302, 303, 307, 308):
+                break
+            location = response.headers.get('Location')
+            if not location:
+                raise ValueError('MGP returned a redirect without a destination.')
+            url = urljoin(url, location)
+            if response.status_code == 303 or (response.status_code in (301, 302) and method == 'POST'):
+                method = 'GET'
+        else:
+            raise ValueError('Too many MGP redirects.')
         if 'Mathematics Genealogy Project' not in response.text:
             raise ValueError('Unexpected MGP response; stopping instead of guessing.')
         target.write_text(response.text)
