@@ -18,7 +18,7 @@ You can also **Import genealogy JSON**. The [Python importer](scripts/README.md)
 
 ```sh
 python3 -m pip install -r requirements.txt
-python3 scripts/fetch_genealogy.py --overlay data/cmc-roots.json --output data/genealogy.json
+python3 scripts/fetch_genealogy.py --overlay data/cmc-roots.json --output data/genealogy.json --max-people 1000
 ```
 
 Mike Izbicki is included using the advisor relationship in his official CV, followed by Christian Shelton’s MGP ancestry. See [data provenance](data/README.md). This is an independent project; please credit and support the [Mathematics Genealogy Project](https://www.mathgenealogy.org/). Historical links can describe mentorship rather than modern PhD supervision. An empty advisor list is a limit of the included record, not evidence that a person had no advisor.

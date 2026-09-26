@@ -88,14 +88,27 @@ class MGP:
             year = int(match.group()) if match else None
         advisors = []
         advisor_names = {}
+        relationship_notes = []
         for p in soup.find_all('p'):
-            if re.match(r'Advisor(?:s|\s*\d*)?:', clean(p.get_text(' ', strip=True))):
+            label = re.match(r'((?:Doctoral\s+)?Advisor|Adviser|Tutor|Teacher|Mentor|Supervisor)(?:s|\s*\d*)?:', clean(p.get_text(' ', strip=True)), re.I)
+            if label:
                 for a in p.select('a[href*="id.php?id="]'):
                     aid = 'mgp-' + re.search(r'id=(\d+)', a['href']).group(1)
                     if aid not in advisors:
                         advisors.append(aid)
                         advisor_names[aid] = clean(a.get_text())
+                        if label.group(1).lower() not in ('advisor', 'adviser', 'doctoral advisor'):
+                            relationship_notes.append(f'MGP labels the relationship to {advisor_names[aid]} as {label.group(1).lower()}.')
+        # Stop if MGP introduces a relationship label this parser does not understand.
+        # Advisor links occur before the Student/Students section; never infer from descendants.
+        header = re.split(r'Students?:|No students known\.', str(soup).split('</h2>', 1)[1], maxsplit=1)[0]
+        linked_people = {'mgp-' + re.search(r'id=(\d+)', a['href']).group(1)
+                         for a in BeautifulSoup(header, 'html.parser').select('a[href*="id.php?id="]')}
+        if linked_people != set(advisors):
+            raise ValueError(f'Unrecognized relationship markup in MGP record {identifier}; inspect the source instead of silently truncating ancestry.')
         result = {'id': f'mgp-{identifier}', 'mgpId': int(identifier), 'name': name, 'year': year, 'institution': institution, 'advisors': advisors, 'sources': [{'label': 'Mathematics Genealogy Project', 'url': BASE + 'id.php?id=' + str(identifier)}]}
+        if relationship_notes:
+            result['note'] = ' '.join(relationship_notes)
         if not advisors:
             result['note'] = 'No advisor is recorded in the Mathematics Genealogy Project. This is a limit of the record, not evidence of no advisor.'
         return result, advisor_names

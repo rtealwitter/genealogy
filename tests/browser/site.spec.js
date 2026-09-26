@@ -244,7 +244,10 @@ test("Teal is teal only while selected; other selections keep CMC maroon", async
 });
 
 test("removing names uses existing records, including unfinished ancestry, without querying MGP", async ({ page }) => {
-  await page.route("**/data/genealogy.json", route => route.fulfill({json:snapshot()}));
+  const data = snapshot();
+  const parent = data.people.find(p => p.id === "mgp-339304").advisors[0];
+  data.people.find(p => p.id === parent).incomplete = true;
+  await page.route("**/data/genealogy.json", route => route.fulfill({json:data}));
   const requests = [];
   await page.route("https://genealogy-api.rtealwitter.workers.dev/**", route => {
     requests.push(route.request().url()); return route.abort();
