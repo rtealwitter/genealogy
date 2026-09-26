@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   validateDataset,
   ancestry,
+  descendants,
   subgraph,
   matchNames,
   safeUrl,
@@ -103,4 +104,9 @@ test("non-Latin names retain their identity during matching", () => {
     ]),
     { roots: ["1"], errors: [] },
   );
+});
+
+test("descendant highlighting follows students without pulling in their other advisors", () => {
+  assert.deepEqual([...descendants("c", people)].sort(), ["a", "b", "c"]);
+  assert.deepEqual([...descendants("e", people)].sort(), ["a", "b", "c", "d", "e"]);
 });

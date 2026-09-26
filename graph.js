@@ -152,3 +152,19 @@ export function safeUrl(url) {
     return null;
   }
 }
+
+export function descendants(id, people) {
+  const children = new Map([...people.keys()].map((key) => [key, []]));
+  for (const person of people.values())
+    for (const advisor of person.advisors)
+      children.get(advisor)?.push(person.id);
+  const seen = new Set(),
+    queue = [id];
+  for (let i = 0; i < queue.length; i++) {
+    const current = queue[i];
+    if (seen.has(current)) continue;
+    seen.add(current);
+    queue.push(...(children.get(current) || []));
+  }
+  return seen;
+}

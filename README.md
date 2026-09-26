@@ -4,7 +4,7 @@ An interactive atlas of mathematical advisor relationships, with Claremont McKen
 
 **[Explore the website](https://www.rtealwitter.com/genealogy/)**
 
-Drag to pan, scroll to zoom, and click a person or their name chip to focus their ancestry. Click the same person again, or empty background, to restore everyone. Multiple advisors and shared ancestors are preserved. Search within the graph, choose a generation limit, or focus on shared ancestry. Each person links to the sources for their record.
+Drag to pan, scroll to zoom, and click a person or their name chip to highlight their ancestors and descendants without moving the tree. Click the same person again, or empty background, to restore everyone. Multiple advisors and shared ancestors are preserved. Search within the graph, choose a generation limit, or focus on shared ancestry. Each person links to the sources for their record.
 
 The **Export poster** button exports the current graph as a single-page vector PDF or SVG: a size that keeps names readable, 36 × 24 inches, A1, or a proportional 36-inch sheet. The dialog shows the paper dimensions and approximate text size before downloading. PDF names remain searchable and accented characters are embedded. A large graph may need larger paper for comfortable reading; the vector files scale without losing sharpness.
 
@@ -12,7 +12,7 @@ The **Export poster** button exports the current graph as a single-page vector P
 
 Open the pencil button (**Edit names**), enter one name or Mathematics Genealogy Project ID per line, and select **Update tree**. Existing records load immediately. New names are looked up through a small Cloudflare Worker; ambiguous matches ask you to choose a person. The importer follows every listed advisor, stopping at already included ancestry.
 
-Math Genealogy requests are cached and spaced at least ten seconds apart. An entirely new tree can take several minutes. Cancel leaves the current graph intact. A lookup retrieves at most 150 new records and 30 new generations at once; unfinished records are marked, and building the same group again continues them. The default CMC group is bundled with the site, so it works even when live lookup is unavailable.
+Math Genealogy requests are cached and spaced at least ten seconds apart. An entirely new tree can take several minutes. Cancel leaves the current graph intact. A lookup retrieves at most 150 new records and 30 new generations at once; unfinished records are marked. Editing a group using known names always reuses the existing data without a network lookup. The default CMC group is bundled with the site, so it works even when live lookup is unavailable.
 
 You can also **Import genealogy JSON**. The [Python importer](scripts/README.md) creates the same data format from names or IDs and is useful for offline collections and refreshing the CMC snapshot:
 

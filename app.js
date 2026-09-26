@@ -1,4 +1,4 @@
-import dagre from "./vendor/dagre.js";
+import { buildLayout } from "./layout.js";
 import { resolveLive } from "./live.js";
 import { API_URL } from "./config.js";
 import {
@@ -6,6 +6,7 @@ import {
   normalize,
   matchNames,
   ancestry,
+  descendants,
   subgraph,
   safeUrl,
 } from "./graph.js";
@@ -24,7 +25,6 @@ let original,
   isCMC = true,
   lookupController = null;
 let camera = { x: 0, y: 0, k: 1 },
-  beforeSelection = null,
   drag = null,
   ignoreClick = false,
   animation;
@@ -81,40 +81,18 @@ function setData(data) {
 function color(id) {
   return (visible.membership.get(id)?.size || 0) > 1 ? CMC_GOLD : CMC_MAROON;
 }
-function draw(focusId = null) {
-  if (!focusId) {
-    selected = null;
-    beforeSelection = null;
-  }
+function draw() {
+  selected = null;
   $("person-card").hidden = true;
   visible = subgraph(people, roots, {
     depth: $("depth").value === "25" ? Infinity : Number($("depth").value),
     sharedOnly: $("shared-only").checked,
   });
-  const rendered = focusId
-    ? subgraph(people, [focusId], {
-        depth: $("depth").value === "25" ? Infinity : Number($("depth").value),
-      })
-    : visible;
-  if (focusId)
-    for (const n of rendered.nodes) {
-      n.shared = (visible.membership.get(n.id)?.size || 0) > 1;
-    }
-  const g = new dagre.graphlib.Graph()
-    .setGraph({
-      rankdir: "TB",
-      nodesep: 30,
-      ranksep: 78,
-      marginx: 30,
-      marginy: 30,
-      ranker: "network-simplex",
-    })
-    .setDefaultEdgeLabel(() => ({}));
-  const ids = new Map(rendered.nodes.map((n, i) => [n.id, "n" + i]));
+  const rendered = visible;
   for (const n of rendered.nodes) {
     const lines = wrap(n.person.name);
     n.width = Math.max(
-      170,
+      140,
       Math.min(
         250,
         Math.max(
@@ -122,110 +100,12 @@ function draw(focusId = null) {
         ) + 28,
       ),
     );
-    n.height = Math.max(88, wrap(n.person.name).length * 27 + 38);
-    n.color =
-      focusId === n.id && n.id === "mgp-339304" ? SELECTED_TEAL : color(n.id);
-    g.setNode(ids.get(n.id), { width: n.width, height: n.height });
+    n.height = Math.max(56, wrap(n.person.name).length * 23 + 29);
+    n.color = color(n.id);
   }
-  for (const e of rendered.edges) g.setEdge(ids.get(e.from), ids.get(e.to));
-  // A hidden common sink keeps the selected people together along the bottom.
-  g.setNode("group-anchor", { width: 0, height: 0 });
-  for (const id of focusId ? [focusId] : roots)
-    g.setEdge(ids.get(id), "group-anchor", { weight: 100, minlen: 1 });
-  dagre.layout(g);
-  const nodes = rendered.nodes.map((n) => ({
-    ...n,
-    x: g.node(ids.get(n.id)).x,
-    y: g.node(ids.get(n.id)).y,
-  }));
-  // Compact each generation around its students, eliminating the long blank
-  // horizontal stretches introduced by the layout's hidden routing nodes.
-  const rows = [...new Set(nodes.map((n) => n.y))]
-    .sort((a, b) => b - a)
-    .map((y) => ({
-      y,
-      nodes: nodes.filter((n) => n.y === y).sort((a, b) => a.x - b.x),
-    }));
-  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-  for (const row of rows) {
-    for (const n of row.nodes) n.oldX = n.x;
-    const desired = row.nodes.map((n, i) => {
-      const students = rendered.edges
-        .filter((e) => e.from === n.id)
-        .map((e) => nodeMap.get(e.to));
-      return students.length
-        ? students.reduce((sum, c) => sum + c.x, 0) / students.length
-        : i * 230;
-    });
-    row.nodes.forEach((n, i) => {
-      n.x = i
-        ? Math.max(
-            desired[i],
-            row.nodes[i - 1].x + (row.nodes[i - 1].width + n.width) / 2 + 32,
-          )
-        : desired[i];
-    });
-    const shift =
-      row.nodes.reduce((sum, n, i) => sum + n.x - desired[i], 0) /
-      row.nodes.length;
-    row.nodes.forEach((n) => (n.x -= shift));
-  }
-  function mapRowX(row, x) {
-    const stops = row.nodes.flatMap((n) => [
-      [n.oldX - n.width / 2, n.x - n.width / 2],
-      [n.oldX + n.width / 2, n.x + n.width / 2],
-    ]);
-    if (x <= stops[0][0]) return x + stops[0][1] - stops[0][0];
-    for (let i = 1; i < stops.length; i++)
-      if (x <= stops[i][0]) {
-        const [a, b] = stops[i - 1],
-          [c, d] = stops[i];
-        return b + ((x - a) / (c - a)) * (d - b);
-      }
-    return x + stops.at(-1)[1] - stops.at(-1)[0];
-  }
-  function mapPoint(p) {
-    if (p.y >= rows[0].y) return { x: mapRowX(rows[0], p.x), y: p.y };
-    for (let i = 1; i < rows.length; i++)
-      if (p.y >= rows[i].y) {
-        const upper = rows[i],
-          lower = rows[i - 1],
-          t = (p.y - upper.y) / (lower.y - upper.y);
-        return {
-          x: mapRowX(upper, p.x) * (1 - t) + mapRowX(lower, p.x) * t,
-          y: p.y,
-        };
-      }
-    return { x: mapRowX(rows.at(-1), p.x), y: p.y };
-  }
-  const minX = Math.min(...nodes.map((n) => n.x - n.width / 2)) - 30,
-    minY = Math.min(...nodes.map((n) => n.y - n.height / 2)) - 30;
-  const width = Math.max(...nodes.map((n) => n.x + n.width / 2)) - minX + 30,
-    height = Math.max(...nodes.map((n) => n.y + n.height / 2)) - minY + 30;
-  const edges = rendered.edges.map((e) => {
-    const parent = nodes.find((n) => n.id === e.from),
-      child = nodes.find((n) => n.id === e.to);
-    const points = g
-      .edge(ids.get(e.from), ids.get(e.to))
-      .points.map(mapPoint)
-      .map((p) => ({ x: p.x - minX, y: p.y - minY }));
-    points[0] = { x: parent.x - minX, y: parent.y + parent.height / 2 - minY };
-    points[points.length - 1] = {
-      x: child.x - minX,
-      y: child.y - child.height / 2 - minY,
-    };
-    const routed =
-      points.at(-1).y - points[0].y <= 110
-        ? [points[0], points.at(-1)]
-        : points;
-    return { ...e, color: color(e.to), points: routed };
-  });
-  layout = {
-    width,
-    height,
-    nodes: nodes.map((n) => ({ ...n, x: n.x - minX, y: n.y - minY })),
-    edges,
-  };
+  positionGraph();
+  layout = buildLayout(rendered, roots, $("graph").clientWidth / Math.max(1, $("graph").clientHeight - 80));
+  const edges = layout.edges;
   $("viewport").replaceChildren();
   const paths = svg("g", { "aria-hidden": "true" });
   for (const edge of edges)
@@ -276,7 +156,7 @@ function draw(focusId = null) {
           {
             class: "name",
             x: n.width / 2,
-            y: 30 + i * 27,
+            y: 25 + i * 23,
             "text-anchor": "middle",
           },
           line,
@@ -290,12 +170,19 @@ function draw(focusId = null) {
           {
             class: "meta",
             x: n.width / 2,
-            y: lines.length * 27 + 25,
+            y: lines.length * 23 + 18,
             "text-anchor": "middle",
           },
           n.person.year,
         ),
       );
+    group.append(
+      svg("text", {
+        class: "compact-name",
+        x: n.width / 2,
+        "text-anchor": "middle",
+      }),
+    );
     group.append(
       svg(
         "title",
@@ -316,10 +203,7 @@ function draw(focusId = null) {
   for (const [i, id] of roots.entries()) {
     const chip = html("button", null, "name-chip");
     chip.dataset.id = id;
-    chip.style.setProperty(
-      "--branch",
-      focusId === id && id === "mgp-339304" ? SELECTED_TEAL : CMC_MAROON,
-    );
+    chip.style.setProperty("--branch", CMC_MAROON);
     chip.append(html("i"), html("span", people.get(id).name));
     chip.setAttribute("aria-pressed", "false");
     chip.onclick = () => toggle(id, true);
@@ -331,7 +215,7 @@ function draw(focusId = null) {
   if (missing)
     $("data-notes").textContent += ` · ${missing} records awaiting retrieval`;
   positionGraph();
-  home(false);
+  fit(false);
 }
 function curve(points) {
   if (points.length < 2) return "";
@@ -345,6 +229,11 @@ function curve(points) {
   return d;
 }
 function positionGraph() {
+  const chips = $("name-chips");
+  const capacity = Math.max(1, Math.floor(chips.clientWidth / (innerWidth < 700 ? 122 : 148)));
+  const count = roots?.length || 1;
+  const columns = Math.ceil(count / Math.ceil(count / capacity));
+  chips.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
   $("graph").style.top =
     document.querySelector("header").getBoundingClientRect().bottom + 15 + "px";
 }
@@ -353,6 +242,33 @@ function transform() {
     "transform",
     `translate(${camera.x},${camera.y}) scale(${camera.k})`,
   );
+  const compact = camera.k < 0.55;
+  $("viewport").classList.toggle("overview", compact);
+  if (compact && layout) {
+    const labels = document.querySelectorAll(".compact-name");
+    layout.nodes.forEach((n, i) => {
+      let size = Math.min(11, Math.max(5, n.height * camera.k * 0.7));
+      const width = Math.max(10, n.width * camera.k - 2);
+      const parts = n.person.name.replace(/\([^)]*\)/g, "").trim().split(/\s+/);
+      const surname = /^(Jr\.?|Sr\.?|II|III|IV)$/.test(parts.at(-1)) ? parts.slice(-2).join(" ") : parts.at(-1);
+      const short = parts.length > 1 ? parts[0][0] + ". " + surname : parts[0];
+      const measure = (text) => {
+        measuringContext.font = `400 ${size}px Lora, Georgia, serif`;
+        return measuringContext.measureText(text).width;
+      };
+      let label = measure(n.person.name) <= width ? n.person.name : short;
+      const minimum = Math.min(size, 8);
+      while (measure(label) > width && size > minimum) size -= 0.5;
+      if (measure(label) > width) label = surname;
+      if (measure(label) > width) {
+        while (label.length > 1 && measure(label + "…") > width) label = label.slice(0, -1);
+        label += "…";
+      }
+      labels[i].textContent = label;
+      labels[i].setAttribute("font-size", size / camera.k);
+      labels[i].setAttribute("y", (size + 2) / camera.k);
+    });
+  }
 }
 function move(target, animate = true) {
   cancelAnimationFrame(animation);
@@ -376,28 +292,19 @@ function move(target, animate = true) {
   }
   animation = requestAnimationFrame(frame);
 }
-function home(animate = true) {
-  if (!layout) return;
-  const group = layout.nodes.filter((n) => n.root),
-    width = $("graph").clientWidth,
-    height = $("graph").clientHeight;
-  const sorted = [...group].sort((a, b) => a.x - b.x);
-  const center = sorted[Math.floor((sorted.length - 1) / 2)];
-  const x = center.x,
-    y = Math.max(...group.map((n) => n.y));
-  const k = 0.82;
-  move({ k, x: width / 2 - x * k, y: height * 0.78 - y * k }, animate);
-}
-function fit() {
+function fit(animate = true) {
   if (!layout) return;
   const w = $("graph").clientWidth,
     h = $("graph").clientHeight;
   const k = Math.min((w - 70) / layout.width, (h - 110) / layout.height, 1.2);
-  move({
-    k: Math.max(0.015, k),
-    x: (w - layout.width * k) / 2,
-    y: (h - 60 - layout.height * k) / 2,
-  });
+  move(
+    {
+      k: Math.max(0.015, k),
+      x: (w - layout.width * k) / 2,
+      y: (h - 60 - layout.height * k) / 2,
+    },
+    animate,
+  );
 }
 function zoom(
   factor,
@@ -413,12 +320,23 @@ function zoom(
   };
   transform();
 }
-function clearSelection(restore = true) {
-  if (!selected) return;
-  const saved = beforeSelection;
+function clearSelection() {
   selected = null;
-  draw();
-  if (restore && saved) move(saved, false);
+  $("person-card").hidden = true;
+  for (const node of layout?.nodes || []) {
+    node.color = color(node.id);
+    node.dim = false;
+    node.selected = false;
+  }
+  for (const edge of layout?.edges || []) edge.dim = false;
+  document.querySelectorAll(".node,.edge,.name-chip").forEach((e) => {
+    e.classList.remove("dim", "lit", "selected", "muted");
+    if (e.hasAttribute("aria-pressed")) e.setAttribute("aria-pressed", "false");
+    if (e.classList.contains("name-chip"))
+      e.style.setProperty("--branch", CMC_MAROON);
+    else if (e.classList.contains("node"))
+      e.style.setProperty("--branch", color(e.dataset.id));
+  });
 }
 function toggle(id, focus = false) {
   if (selected === id) {
@@ -428,24 +346,47 @@ function toggle(id, focus = false) {
   select(id, focus);
 }
 function select(id, focus = false) {
-  if (!beforeSelection) beforeSelection = { ...camera };
-  draw(id);
   selected = id;
   const person = people.get(id),
-    ancestors = ancestry(id, people);
+    ancestors = ancestry(id, people),
+    successors = descendants(id, people),
+    related = new Set([...ancestors, ...successors]);
+  for (const node of layout.nodes) {
+    node.selected = node.id === id;
+    node.dim = !related.has(node.id);
+    node.color =
+      node.id === id && id === "mgp-339304" ? SELECTED_TEAL : color(node.id);
+  }
+  for (const edge of layout.edges)
+    edge.dim = !(
+      (ancestors.has(edge.from) && ancestors.has(edge.to)) ||
+      (successors.has(edge.from) && successors.has(edge.to))
+    );
   document.querySelectorAll(".node").forEach((e) => {
-    e.classList.toggle("dim", !ancestors.has(e.dataset.id));
+    e.classList.toggle("dim", !related.has(e.dataset.id));
+    e.style.setProperty(
+      "--branch",
+      e.dataset.id === id && id === "mgp-339304"
+        ? SELECTED_TEAL
+        : color(e.dataset.id),
+    );
     e.classList.toggle("selected", e.dataset.id === id);
     e.setAttribute("aria-pressed", String(e.dataset.id === id));
   });
   document.querySelectorAll(".edge").forEach((e) => {
-    const lit = ancestors.has(e.dataset.from) && ancestors.has(e.dataset.to);
+    const lit =
+      (ancestors.has(e.dataset.from) && ancestors.has(e.dataset.to)) ||
+      (successors.has(e.dataset.from) && successors.has(e.dataset.to));
     e.classList.toggle("lit", lit);
     e.classList.toggle("dim", !lit);
   });
   document.querySelectorAll(".name-chip").forEach((e) => {
     e.classList.toggle("selected", e.dataset.id === id);
-    e.classList.toggle("muted", e.dataset.id !== id);
+    e.classList.toggle("muted", !related.has(e.dataset.id));
+    e.style.setProperty(
+      "--branch",
+      e.dataset.id === id && id === "mgp-339304" ? SELECTED_TEAL : CMC_MAROON,
+    );
     e.setAttribute("aria-pressed", String(e.dataset.id === id));
   });
   const card = $("person-card");
@@ -481,17 +422,6 @@ function select(id, focus = false) {
     link.rel = "noopener";
     card.append(link);
   }
-  {
-    const node = layout.nodes.find((n) => n.id === id);
-    if (node) {
-      const k = Math.max(0.85, camera.k);
-      move({
-        k,
-        x: $("graph").clientWidth / 2 - node.x * k,
-        y: $("graph").clientHeight * 0.74 - node.y * k,
-      });
-    }
-  }
 }
 $("graph").addEventListener(
   "wheel",
@@ -505,12 +435,20 @@ $("graph").addEventListener(
 $("graph").onpointerdown = (e) => {
   if (e.button !== 0 || e.target.closest(".node")) return;
   cancelAnimationFrame(animation);
-  drag = { x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY };
+  drag = {
+    x: e.clientX,
+    y: e.clientY,
+    startX: e.clientX,
+    startY: e.clientY,
+    moved: false,
+  };
   $("graph").setPointerCapture(e.pointerId);
   $("graph").classList.add("dragging");
 };
 $("graph").onpointermove = (e) => {
   if (!drag) return;
+  if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > 5)
+    drag.moved = true;
   camera.x += e.clientX - drag.x;
   camera.y += e.clientY - drag.y;
   drag.x = e.clientX;
@@ -518,9 +456,7 @@ $("graph").onpointermove = (e) => {
   transform();
 };
 $("graph").onpointerup = (e) => {
-  if (drag)
-    ignoreClick =
-      Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > 5;
+  if (drag) ignoreClick = Boolean(drag.moved);
   drag = null;
   $("graph").classList.remove("dragging");
 };
@@ -565,12 +501,12 @@ $("zoom-out").onclick = () => zoom(0.8);
 $("fit").onclick = fit;
 $("home").onclick = () => {
   clearSelection(false);
-  home();
+  fit();
 };
 new ResizeObserver(positionGraph).observe(document.querySelector("header"));
 window.addEventListener("resize", () => {
   positionGraph();
-  if (layout) home(false);
+  if (layout) fit(false);
 });
 $("edit-open").onclick = () => {
   $("names").value = roots.map((id) => people.get(id).name).join("\n");
@@ -615,10 +551,7 @@ $("build").onclick = async () => {
     result = matchNames(names, dataset.people);
   if (
     !result.errors.length &&
-    result.roots.length &&
-    result.roots.every(
-      (id) => ![...ancestry(id, people)].some((a) => people.get(a).incomplete),
-    )
+    result.roots.length
   ) {
     roots = result.roots;
     isCMC = false;
@@ -708,7 +641,7 @@ $("poster-open").onclick = () => {
 };
 async function updatePosterPreview() {
   try {
-    const { getPosterMetrics } = await import("./poster.js?v=2");
+    const { getPosterMetrics } = await import("./poster.js?v=3");
     const m = getPosterMetrics(layout, $("poster-size").value);
     $("poster-dimensions").textContent =
       `${m.width.toFixed(1)} × ${m.height.toFixed(1)} inches · ${m.nameSize.toFixed(1)} pt names`;
@@ -722,11 +655,11 @@ async function download(kind) {
   button.disabled = true;
   $("export-status").textContent = "Preparing…";
   try {
-    const exporter = await import("./poster.js?v=2");
+    const exporter = await import("./poster.js?v=3");
     const options = {
       title: $("poster-title").value || "PhD Genealogy Tree",
       subtitle: selected
-        ? people.get(selected).name + " · Advisor lineage"
+        ? people.get(selected).name + " · Ancestors and descendants highlighted"
         : isCMC
           ? "Claremont McKenna College · Mathematical Sciences"
           : roots.map((id) => people.get(id).name).join(" · "),

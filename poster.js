@@ -14,7 +14,7 @@ let fontsPromise;
 function fontData() {
   if (!fontsPromise)
     fontsPromise = Promise.all(
-      ["DejaVuSans", "DejaVuSans-Bold"].map(async (name) => {
+      ["Lora-400", "Lora-600"].map(async (name) => {
         const response = await fetch(
           new URL(`./assets/fonts/${name}.ttf`, import.meta.url),
         );
@@ -266,7 +266,7 @@ async function drawPoster(layout, options = {}) {
   });
   const color = (value) =>
     /^#[0-9a-f]{6}$/i.test(value || "") ? value : C.plum;
-  const soften = (value) => {
+  const soften = (value, opacity = 0.38) => {
     const rgb = color(value)
       .slice(1)
       .match(/../g)
@@ -275,7 +275,7 @@ async function drawPoster(layout, options = {}) {
       "#" +
       rgb
         .map((channel) =>
-          Math.round(channel * 0.38 + 252 * 0.62)
+          Math.round(channel * opacity + 252 * (1 - opacity))
             .toString(16)
             .padStart(2, "0"),
         )
@@ -287,7 +287,7 @@ async function drawPoster(layout, options = {}) {
     const ink = edge.color || byId.get(edge.to)?.color;
     curve(
       (edge.points || []).map(mapPoint),
-      soften(ink),
+      soften(ink, edge.dim ? 0.08 : 0.38),
       Math.max(0.35, 1.05 * scale),
     );
   }
@@ -298,7 +298,7 @@ async function drawPoster(layout, options = {}) {
       w = node.width * scale,
       h = node.height * scale;
     const y = center.y - h / 2;
-    const ink = color(node.color);
+    const ink = node.dim ? soften(node.color, 0.15) : color(node.color);
     let nameSize = NAME_SIZE * scale,
       lines;
     const name = clean(person.name || "Unknown");
@@ -354,7 +354,7 @@ async function drawPoster(layout, options = {}) {
         center.x,
         detailY + index * detailSize * 1.2,
         detailSize,
-        C.muted,
+        node.dim ? soften(C.muted, 0.15) : C.muted,
         false,
         "center",
       ),

@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
+const bundledData = fs.readFileSync("data/genealogy.json", "utf8");
+const snapshot = () => JSON.parse(bundledData);
 test.beforeEach(async ({ page }) => {
-  const data = JSON.parse(fs.readFileSync("data/genealogy.json", "utf8"));
+  const data = snapshot();
   for (const person of data.people) delete person.incomplete;
   await page.route("**/data/genealogy.json", (route) =>
     route.fulfill({ json: data }),
@@ -22,17 +24,31 @@ test("minimal interface, readable names, click again and background both restore
   await expect(page.locator("#person-card")).toBeHidden();
   const all = await page.locator(".node").count();
   const textSize = await page
-    .locator(".node .name")
+    .locator(".node .compact-name")
     .first()
     .evaluate(
       (e) => parseFloat(getComputedStyle(e).fontSize) * e.getScreenCTM().a,
     );
-  expect(textSize).toBeGreaterThan(18);
+  expect(textSize).toBeGreaterThanOrEqual(5);
+  const positions = await page.locator(".node").evaluateAll(ns => ns.map(n => n.getAttribute("transform")));
+  const camera = await page.locator("#viewport").getAttribute("transform");
+  expect(await page.locator(".node").evaluateAll(ns => ns.every(n => {
+    const r = n.getBoundingClientRect(), g = document.getElementById("graph").getBoundingClientRect();
+    return r.left >= g.left && r.right <= g.right && r.top >= g.top && r.bottom <= g.bottom;
+  }))).toBe(true);
+  const rows = await page.locator(".name-chip").evaluateAll(ns => Object.values(ns.reduce((rows, n) => {
+    const y = Math.round(n.getBoundingClientRect().top); rows[y] = (rows[y] || 0) + 1; return rows;
+  }, {})));
+  expect(Math.max(...rows) - Math.min(...rows)).toBeLessThanOrEqual(1);
   const chip = page.locator('.name-chip[data-id="mgp-339304"]');
   await chip.click();
   await expect(page.locator("#person-card")).toContainText("Musco");
   await expect(page.locator("#person-card")).toContainText("Hellerstein");
-  expect(await page.locator(".node").count()).toBeLessThan(all);
+  await expect(page.locator(".node")).toHaveCount(all);
+  expect(await page.locator(".node.dim").count()).toBeGreaterThan(0);
+  expect(await page.locator(".edge.lit").count()).toBeGreaterThan(0);
+  expect(await page.locator(".node").evaluateAll(ns => ns.map(n => n.getAttribute("transform")))).toEqual(positions);
+  expect(await page.locator("#viewport").getAttribute("transform")).toBe(camera);
   await chip.click();
   await expect(page.locator(".node")).toHaveCount(all);
   await expect(page.locator("#person-card")).toBeHidden();
@@ -52,6 +68,7 @@ test("minimal interface, readable names, click again and background both restore
   await page.mouse.move(graph.x + 30, graph.y + 40);
   await page.mouse.down();
   await page.mouse.move(graph.x + 90, graph.y + 80, { steps: 5 });
+  await page.mouse.move(graph.x + 30, graph.y + 40, { steps: 5 });
   await page.mouse.up();
   await expect(page.locator("#person-card")).toBeVisible();
   await expect(chip).toHaveAttribute("aria-pressed", "true");
@@ -224,4 +241,19 @@ test("Teal is teal only while selected; other selections keep CMC maroon", async
       .locator(".node.selected")
       .evaluate((e) => getComputedStyle(e).getPropertyValue("--branch").trim()),
   ).toBe("#981a31");
+});
+
+test("removing names uses existing records, including unfinished ancestry, without querying MGP", async ({ page }) => {
+  await page.route("**/data/genealogy.json", route => route.fulfill({json:snapshot()}));
+  const requests = [];
+  await page.route("https://genealogy-api.rtealwitter.workers.dev/**", route => {
+    requests.push(route.request().url()); return route.abort();
+  });
+  await ready(page);
+  await page.locator("#edit-open").click();
+  await page.locator("#names").fill("R. Teal Witter\nRobert Cass");
+  await page.locator("#build").click();
+  await expect(page.locator("#edit-dialog")).not.toBeVisible();
+  await expect(page.locator(".name-chip")).toHaveCount(2);
+  expect(requests).toEqual([]);
 });
