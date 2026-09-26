@@ -12,7 +12,7 @@ export function validate(url) {
   if (url.pathname === '/person') {
     const id = url.searchParams.get('id') || '';
     if (!/^[1-9]\d{0,7}$/.test(id)) throw new Error('Enter a valid numeric MGP ID.');
-    return { type: 'person', value: id, key: `v2:person:${id}` };
+    return { type: 'person', value: id, key: `v4:person:${id}` };
   }
   if (url.pathname === '/search') {
     const q = clean(url.searchParams.get('q'));
@@ -132,6 +132,35 @@ function collect(rewriter, selector, items) {
   });
 }
 
+export function parseRelationships(paragraphs) {
+  const advisorNames = {}, notes = [];
+  for (const p of paragraphs) {
+    const label = clean(p.text).match(/^((?:Doctoral\s+)?Advisor|Adviser|Tutor|Teacher|Mentor|Supervisor)(?:s|\s*\d*)?:/i);
+    if (!label) continue;
+    for (const a of p.links) {
+      const match = a.href?.match(/[?&]id=(\d+)/);
+      if (!match) continue;
+      const name = clean(a.text);
+      advisorNames[`mgp-${match[1]}`] = name;
+      if (!/^(?:doctoral\s+)?advisor$|^adviser$/i.test(label[1])) notes.push(`MGP labels the relationship to ${name} as ${label[1].toLowerCase()}.`);
+    }
+  }
+  return { advisorNames, notes: [...new Set(notes)] };
+}
+
+// A conservative completeness check: an unfamiliar heading must not silently
+// turn a linked ancestor into an apparent end of the lineage.
+export function assertCompleteRelationships(html, advisorNames) {
+  const headingEnd = /<\/h2\s*>/i.exec(html);
+  if (!headingEnd) throw new Error('The genealogy record has an unfamiliar layout.');
+  const header = html.slice(headingEnd.index + headingEnd[0].length).split(/Students?:|No students known\./i, 1)[0];
+  for (const match of header.matchAll(/\bhref\s*=\s*["'][^"']*\bid\.php\?id=(\d+)/gi)) {
+    if (!Object.hasOwn(advisorNames, `mgp-${match[1]}`)) {
+      throw new Error('The genealogy record contains an unrecognized advisor relationship. Please report this record so the parser can be updated.');
+    }
+  }
+}
+
 export async function parsePerson(html, id) {
   const names = [], degrees = [], schools = [], paragraphs = [];
   let paragraph, link;
@@ -149,18 +178,14 @@ export async function parsePerson(html, id) {
   await rewriter.transform(new Response(html)).text();
   const name = clean(names[0]?.text);
   if (!name || /not found|error|search/i.test(name)) throw new Error('No person record was found for that MGP ID.');
-  const advisorNames = {};
-  for (const p of paragraphs) if (/^Advisor(?:s|\s*\d*)?:/.test(clean(p.text))) {
-    for (const a of p.links) {
-      const match = a.href?.match(/[?&]id=(\d+)/);
-      if (match) advisorNames[`mgp-${match[1]}`] = clean(a.text);
-    }
-  }
+  const { advisorNames, notes } = parseRelationships(paragraphs);
+  assertCompleteRelationships(html, advisorNames);
   const year = clean(degrees[0]?.text).match(/\b(1\d{3}|20\d{2})\b/);
   const person = { id: `mgp-${id}`, mgpId: Number(id), name, year: year ? Number(year[1]) : null,
     institution: clean(schools[0]?.text), advisors: Object.keys(advisorNames),
     sources: [{ label: 'Mathematics Genealogy Project', url: `${BASE}id.php?id=${id}` }] };
   if (!person.advisors.length) person.note = 'No advisor is recorded in the Mathematics Genealogy Project. This is a limit of the record, not evidence of no advisor.';
+  else if (notes.length) person.note = notes.join(' ');
   return { person, advisorNames };
 }
 

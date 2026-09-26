@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import worker, { validate, MGPBroker } from './index.js';
+import worker, { validate, MGPBroker, parseRelationships, assertCompleteRelationships } from './index.js';
 
 test('only bounded names and numeric record IDs reach the upstream', () => {
-  assert.equal(validate(new URL('https://test/person?id=339304')).key, 'v2:person:339304');
+  assert.equal(validate(new URL('https://test/person?id=339304')).key, 'v4:person:339304');
   assert.equal(validate(new URL('https://test/search?q=Albert%20%20Einstein')).key, 'v2:search:albert einstein');
   for (const path of ['/person?id=0', '/person?id=https://example.com', '/person?id=1%26foo=bar', '/search?q=a', `/search?q=${'x'.repeat(121)}`, '/search?q=foo%0Abar']) {
     assert.throws(() => validate(new URL(`https://test${path}`)));
@@ -48,4 +48,41 @@ test('global throttle rejects overlapping misses but cached records remain avail
   assert.equal(hit.status, 200);
   assert.equal(hit.headers.get('X-Genealogy-Cache'), 'hit');
   assert.equal((await hit.json()).person.name, 'Albert Einstein');
+});
+
+test('historical tutors are included with their source label, without including student links', () => {
+  const result = parseRelationships([
+    { text: 'Tutor: Edward John Routh', links: [{ href: 'id.php?id=101929', text: 'Edward John Routh' }] },
+    { text: 'Students: Example Student', links: [{ href: 'id.php?id=123', text: 'Example Student' }] },
+    { text: 'An Advisor: mentioned in prose', links: [{ href: 'id.php?id=456', text: 'Unrelated' }] }
+  ]);
+  assert.deepEqual(result, {
+    advisorNames: { 'mgp-101929': 'Edward John Routh' },
+    notes: ['MGP labels the relationship to Edward John Routh as tutor.']
+  });
+});
+
+test('numbered and plural relationship labels preserve all advisors and historical notes', () => {
+  for (const label of ['Advisor 1', 'Advisors', 'Teacher', 'Mentors', 'Supervisor 2']) {
+    const result = parseRelationships([{ text: `${label}: Example`, links: [{ href: 'id.php?id=12', text: 'Example' }] }]);
+    assert.deepEqual(result.advisorNames, { 'mgp-12': 'Example' });
+    assert.equal(result.notes.length, label.startsWith('Advisor') ? 0 : 1);
+  }
+});
+
+test('all advisors from multiple degrees survive Doctoral advisor and Adviser labels', () => {
+  const result = parseRelationships([
+    { text: 'Doctoral advisor: Johann Andreas Quenstedt', links: [{ href: 'id.php?id=127956', text: 'Johann Andreas Quenstedt' }] },
+    { text: 'Advisor 1: Example', links: [{ href: 'id.php?id=127801', text: 'Example' }] },
+    { text: 'ADVISER: Another', links: [{ href: 'id.php?id=230796', text: 'Another' }] }
+  ]);
+  assert.deepEqual(Object.keys(result.advisorNames), ['mgp-127956', 'mgp-127801', 'mgp-230796']);
+  assert.deepEqual(result.notes, []);
+});
+
+test('unrecognized ancestor links fail closed while student links are excluded', () => {
+  const html = '<h2>Person</h2><p>Doctoral advisor: <a href="id.php?id=127956">Advisor</a></p><h3>Students:</h3><a href="id.php?id=12">Student</a>';
+  assert.throws(() => assertCompleteRelationships(html, {}), /unrecognized advisor/);
+  assert.doesNotThrow(() => assertCompleteRelationships(html, { 'mgp-127956': 'Advisor' }));
+  assert.doesNotThrow(() => assertCompleteRelationships('<h2>Person</h2><p>No students known.</p>', {}));
 });
