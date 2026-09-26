@@ -25,6 +25,7 @@ let original,
   isCMC = true,
   lookupController = null;
 let camera = { x: 0, y: 0, k: 1 },
+  viewMode = "group",
   drag = null,
   ignoreClick = false,
   animation;
@@ -177,13 +178,6 @@ function draw() {
         ),
       );
     group.append(
-      svg("text", {
-        class: "compact-name",
-        x: n.width / 2,
-        "text-anchor": "middle",
-      }),
-    );
-    group.append(
       svg(
         "title",
         {},
@@ -215,7 +209,7 @@ function draw() {
   if (missing)
     $("data-notes").textContent += ` · ${missing} records awaiting retrieval`;
   positionGraph();
-  fit(false);
+  home(false);
 }
 function curve(points) {
   if (points.length < 2) return "";
@@ -242,34 +236,8 @@ function transform() {
     "transform",
     `translate(${camera.x},${camera.y}) scale(${camera.k})`,
   );
-  const compact = camera.k < 0.55;
-  $("viewport").classList.toggle("overview", compact);
-  if (compact && layout) {
-    const labels = document.querySelectorAll(".compact-name");
-    layout.nodes.forEach((n, i) => {
-      let size = Math.min(11, Math.max(5, n.height * camera.k * 0.7));
-      const width = Math.max(10, n.width * camera.k - 2);
-      const parts = n.person.name.replace(/\([^)]*\)/g, "").trim().split(/\s+/);
-      const surname = /^(Jr\.?|Sr\.?|II|III|IV)$/.test(parts.at(-1)) ? parts.slice(-2).join(" ") : parts.at(-1);
-      const short = parts.length > 1 ? parts[0][0] + ". " + surname : parts[0];
-      const measure = (text) => {
-        measuringContext.font = `400 ${size}px Lora, Georgia, serif`;
-        return measuringContext.measureText(text).width;
-      };
-      let label = measure(n.person.name) <= width ? n.person.name : short;
-      const minimum = Math.min(size, 8);
-      while (measure(label) > width && size > minimum) size -= 0.5;
-      if (measure(label) > width) label = surname;
-      if (measure(label) > width) {
-        while (label.length > 1 && measure(label + "…") > width) label = label.slice(0, -1);
-        label += "…";
-      }
-      labels[i].textContent = label;
-      labels[i].setAttribute("font-size", size / camera.k);
-      labels[i].setAttribute("y", (size + 2) / camera.k);
-    });
-  }
 }
+
 function move(target, animate = true) {
   cancelAnimationFrame(animation);
   if (!animate || matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -292,8 +260,22 @@ function move(target, animate = true) {
   }
   animation = requestAnimationFrame(frame);
 }
+function home(animate = true) {
+  if (!layout) return;
+  viewMode = "group";
+  const group = layout.nodes.filter((node) => node.root);
+  if (!group.length) return fit(animate);
+  const left = Math.min(...group.map((node) => node.x - node.width / 2)),
+    right = Math.max(...group.map((node) => node.x + node.width / 2)),
+    top = Math.min(...group.map((node) => node.y - node.height / 2)),
+    bottom = Math.max(...group.map((node) => node.y + node.height / 2));
+  const w = $("graph").clientWidth, h = $("graph").clientHeight;
+  const k = Math.max(0.015, Math.min(1.15, (w - 64) / (right - left), (h - 150) / (bottom - top)));
+  move({ k, x: w / 2 - (left + right) * k / 2, y: h - 105 - bottom * k }, animate);
+}
 function fit(animate = true) {
   if (!layout) return;
+  viewMode = "all";
   const w = $("graph").clientWidth,
     h = $("graph").clientHeight;
   const k = Math.min((w - 70) / layout.width, (h - 110) / layout.height, 1.2);
@@ -312,6 +294,7 @@ function zoom(
   y = $("graph").clientHeight / 2,
 ) {
   cancelAnimationFrame(animation);
+  viewMode = "custom";
   const k = Math.max(0.015, Math.min(3, camera.k * factor));
   camera = {
     x: x - ((x - camera.x) * k) / camera.k,
@@ -449,6 +432,7 @@ $("graph").onpointermove = (e) => {
   if (!drag) return;
   if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > 5)
     drag.moved = true;
+  viewMode = "custom";
   camera.x += e.clientX - drag.x;
   camera.y += e.clientY - drag.y;
   drag.x = e.clientX;
@@ -487,6 +471,7 @@ $("graph").onkeydown = (e) => {
   if (step) {
     e.preventDefault();
     cancelAnimationFrame(animation);
+    viewMode = "custom";
     camera.x += step[0];
     camera.y += step[1];
     transform();
@@ -501,13 +486,15 @@ $("zoom-out").onclick = () => zoom(0.8);
 $("fit").onclick = fit;
 $("home").onclick = () => {
   clearSelection(false);
-  fit();
+  home();
 };
-new ResizeObserver(positionGraph).observe(document.querySelector("header"));
-window.addEventListener("resize", () => {
+function resizeView() {
   positionGraph();
-  if (layout) fit(false);
-});
+  if (viewMode === "group") home(false);
+  else if (viewMode === "all") fit(false);
+}
+new ResizeObserver(resizeView).observe(document.querySelector("header"));
+window.addEventListener("resize", resizeView);
 $("edit-open").onclick = () => {
   $("names").value = roots.map((id) => people.get(id).name).join("\n");
   $("edit-dialog").showModal();

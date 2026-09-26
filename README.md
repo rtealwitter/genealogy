@@ -4,7 +4,7 @@ An interactive atlas of mathematical advisor relationships, with Claremont McKen
 
 **[Explore the website](https://www.rtealwitter.com/genealogy/)**
 
-Drag to pan, scroll to zoom, and click a person or their name chip to highlight their ancestors and descendants without moving the tree. Click the same person again, or empty background, to restore everyone. Multiple advisors and shared ancestors are preserved. Search within the graph, choose a generation limit, or focus on shared ancestry. Each person links to the sources for their record.
+The opening view frames the selected group, keeping their names readable; the home button returns to it, and the full-tree button shows all ancestry. Drag to pan, scroll to zoom, and click a person or their name chip to highlight their ancestors and descendants without moving the tree. Click the same person again, or empty background, to restore everyone. Multiple advisors and shared ancestors are preserved. Search within the graph, choose a generation limit, or focus on shared ancestry. Each person links to the sources for their record.
 
 The **Export poster** button exports the current graph as a single-page vector PDF or SVG: a size that keeps names readable, 36 × 24 inches, A1, or a proportional 36-inch sheet. The dialog shows the paper dimensions and approximate text size before downloading. PDF names remain searchable and accented characters are embedded. A large graph may need larger paper for comfortable reading; the vector files scale without losing sharpness.
 

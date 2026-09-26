@@ -608,33 +608,6 @@ input[type="checkbox"] {
   opacity: 0.6;
 }
 
-.compact-name {
-  display: none;
-  font-family: var(--serif);
-  fill: #393334;
-  paint-order: stroke;
-  stroke: var(--paper);
-  stroke-width: 2px;
-  stroke-linejoin: round;
-}
-.overview .node .name,
-.overview .node .meta {
-  display: none;
-}
-.overview .compact-name {
-  display: block;
-}
-.overview .node.root .compact-name {
-  fill: var(--branch);
-  font-weight: 500;
-}
-.node.selected .compact-name {
-  fill: var(--branch);
-  font-weight: 600;
-}
-.node.lit .compact-name {
-  font-weight: 500;
-}
 .node.dim {
   opacity: 0.1;
 }

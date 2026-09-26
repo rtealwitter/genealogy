@@ -24,18 +24,28 @@ test("minimal interface, readable names, click again and background both restore
   await expect(page.locator("#person-card")).toBeHidden();
   const all = await page.locator(".node").count();
   const textSize = await page
-    .locator(".node .compact-name")
+    .locator(".node.root .name")
     .first()
     .evaluate(
       (e) => parseFloat(getComputedStyle(e).fontSize) * e.getScreenCTM().a,
     );
-  expect(textSize).toBeGreaterThanOrEqual(5);
+  expect(textSize).toBeGreaterThanOrEqual(14);
+  expect(await page.locator(".node .name").evaluateAll(ns => [...new Set(ns.map(n => getComputedStyle(n).fontSize))])).toEqual(["23px"]);
   const positions = await page.locator(".node").evaluateAll(ns => ns.map(n => n.getAttribute("transform")));
   const camera = await page.locator("#viewport").getAttribute("transform");
+  expect(await page.locator(".node.root").evaluateAll(ns => ns.every(n => {
+    const r = n.getBoundingClientRect(), g = document.getElementById("graph").getBoundingClientRect();
+    return r.left >= g.left && r.right <= g.right && r.top >= g.top && r.bottom <= g.bottom;
+  }))).toBe(true);
+  await page.locator("#fit").click();
+  await page.waitForTimeout(450);
   expect(await page.locator(".node").evaluateAll(ns => ns.every(n => {
     const r = n.getBoundingClientRect(), g = document.getElementById("graph").getBoundingClientRect();
     return r.left >= g.left && r.right <= g.right && r.top >= g.top && r.bottom <= g.bottom;
   }))).toBe(true);
+  await page.locator("#home").click();
+  await page.waitForTimeout(450);
+  expect(await page.locator("#viewport").getAttribute("transform")).toBe(camera);
   const rows = await page.locator(".name-chip").evaluateAll(ns => Object.values(ns.reduce((rows, n) => {
     const y = Math.round(n.getBoundingClientRect().top); rows[y] = (rows[y] || 0) + 1; return rows;
   }, {})));
