@@ -270,8 +270,15 @@ function home(animate = true) {
     top = Math.min(...group.map((node) => node.y - node.height / 2)),
     bottom = Math.max(...group.map((node) => node.y + node.height / 2));
   const w = $("graph").clientWidth, h = $("graph").clientHeight;
-  const k = Math.max(0.015, Math.min(1.15, (w - 64) / (right - left), (h - 150) / (bottom - top)));
-  move({ k, x: w / 2 - (left + right) * k / 2, y: h - 105 - bottom * k }, animate);
+  const sidePadding = Math.min(72, Math.max(24, w * 0.05));
+  const topPadding = 48, bottomPadding = 110;
+  const availableHeight = Math.max(1, h - topPadding - bottomPadding);
+  const k = Math.max(0.015, Math.min(1.15, (w - sidePadding * 2) / (right - left), availableHeight / (bottom - top)));
+  move({
+    k,
+    x: w / 2 - (left + right) * k / 2,
+    y: topPadding + availableHeight / 2 - (top + bottom) * k / 2,
+  }, animate);
 }
 function fit(animate = true) {
   if (!layout) return;
