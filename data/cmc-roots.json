@@ -1,0 +1,274 @@
+{
+  "title": "The CMC mathematical family",
+  "description": "Advisor lineages of the regular faculty in Claremont McKenna College’s Department of Mathematical Sciences. Relationships are sourced from the Mathematics Genealogy Project and faculty CVs.",
+  "updated": "2026-09-25",
+  "defaultRoots": [
+    "mgp-7102",
+    "mgp-230305",
+    "mgp-286215",
+    "mgp-84793",
+    "mgp-38433",
+    "cmc-michael-izbicki",
+    "mgp-17045",
+    "mgp-69085",
+    "mgp-36621",
+    "mgp-268641",
+    "mgp-339304",
+    "mgp-140052"
+  ],
+  "people": [
+    {
+      "id": "mgp-7102",
+      "name": "Asuman Aksoy",
+      "year": 1984,
+      "institution": "University of Michigan",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "mgpId": 7102,
+      "incomplete": true,
+      "note": "MGP record pending retrieval.",
+      "preferredName": "Asuman Aksoy"
+    },
+    {
+      "id": "mgp-230305",
+      "name": "Sarah Cannon",
+      "year": 2018,
+      "institution": "Georgia Institute of Technology",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "mgpId": 230305,
+      "incomplete": true,
+      "note": "MGP record pending retrieval.",
+      "preferredName": "Sarah Cannon"
+    },
+    {
+      "id": "mgp-286215",
+      "name": "Robert Cass",
+      "year": 2021,
+      "institution": "Harvard University",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "mgpId": 286215,
+      "incomplete": true,
+      "note": "MGP record pending retrieval.",
+      "preferredName": "Robert Cass"
+    },
+    {
+      "id": "mgp-84793",
+      "name": "Lenny Fukshansky",
+      "year": 2004,
+      "institution": "University of Texas at Austin",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "mgpId": 84793,
+      "incomplete": true,
+      "note": "MGP record pending retrieval.",
+      "preferredName": "Lenny Fukshansky"
+    },
+    {
+      "id": "mgp-38433",
+      "name": "Mark Huber",
+      "year": 1999,
+      "institution": "Cornell University",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "mgpId": 38433,
+      "incomplete": true,
+      "note": "MGP record pending retrieval.",
+      "preferredName": "Mark Huber"
+    },
+    {
+      "id": "cmc-michael-izbicki",
+      "name": "Michael Izbicki",
+      "year": 2017,
+      "institution": "University of California, Riverside",
+      "advisors": [
+        "mgp-131673"
+      ],
+      "sources": [
+        {
+          "label": "Michael Izbicki CV",
+          "url": "https://www.cmc.edu/sites/default/files/2024-06/IzbickiM2023CV.pdf"
+        },
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "aliases": [
+        "Mike Izbicki"
+      ],
+      "note": "PhD and advisor verified from the faculty CV. No matching MGP record found in the Izbicki surname search on 2026-09-25; the advisor has an MGP record.",
+      "preferredName": "Michael Izbicki"
+    },
+    {
+      "id": "mgp-17045",
+      "name": "Chiu-Yen Kao",
+      "year": 2004,
+      "institution": "University of California, Los Angeles",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "mgpId": 17045,
+      "incomplete": true,
+      "note": "MGP record pending retrieval.",
+      "preferredName": "Chiu-Yen Kao"
+    },
+    {
+      "id": "mgp-69085",
+      "name": "Sam Nelson",
+      "year": 2002,
+      "institution": "Louisiana State University",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "mgpId": 69085,
+      "incomplete": true,
+      "note": "MGP record pending retrieval.",
+      "preferredName": "Sam Nelson"
+    },
+    {
+      "id": "mgp-36621",
+      "name": "Michael O’Neill",
+      "year": 1995,
+      "institution": "University of California, Los Angeles",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "mgpId": 36621,
+      "incomplete": true,
+      "note": "MGP record pending retrieval.",
+      "aliases": [
+        "Mike O'Neill",
+        "Michael O'Neill",
+        "Mike O’Neill"
+      ],
+      "preferredName": "Michael O’Neill"
+    },
+    {
+      "id": "mgp-268641",
+      "name": "Evan Rosenman",
+      "year": 2020,
+      "institution": "Stanford University",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "mgpId": 268641,
+      "incomplete": true,
+      "note": "MGP record pending retrieval.",
+      "preferredName": "Evan Rosenman"
+    },
+    {
+      "id": "mgp-339304",
+      "name": "R. Teal Witter",
+      "year": 2025,
+      "institution": "New York University",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "mgpId": 339304,
+      "incomplete": true,
+      "note": "MGP record pending retrieval.",
+      "aliases": [
+        "R. Teal Witter",
+        "Teal Witter",
+        "Raylen Teal Witter"
+      ],
+      "preferredName": "R. Teal Witter"
+    },
+    {
+      "id": "mgp-140052",
+      "name": "Helen Wong",
+      "year": 2007,
+      "institution": "Yale University",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "mgpId": 140052,
+      "incomplete": true,
+      "note": "MGP record pending retrieval.",
+      "preferredName": "Helen Wong"
+    },
+    {
+      "id": "mgp-131673",
+      "mgpId": 131673,
+      "name": "Christian Shelton",
+      "year": 2001,
+      "institution": "Massachusetts Institute of Technology",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=131673"
+        }
+      ],
+      "incomplete": true
+    }
+  ],
+  "rosterSource": {
+    "label": "CMC Mathematical Sciences faculty",
+    "url": "https://www.cmc.edu/mathematics/math-faculty"
+  },
+  "rosterNote": "Includes the 12 faculty listed before Visiting Faculty on the departmental page, interpreted as the tenured/tenure-track roster; excludes visiting and emeritus faculty. Verified September 25, 2026. Historical MGP links may describe mentorship or other academic relationships rather than modern PhD supervision. An empty advisor list means no advisor is documented in this snapshot."
+}

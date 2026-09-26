@@ -1,0 +1,1276 @@
+{
+  "title": "The CMC mathematical family",
+  "description": "Advisor lineages of the regular faculty in Claremont McKenna College’s Department of Mathematical Sciences. Relationships are sourced from the Mathematics Genealogy Project and faculty CVs.",
+  "updated": "2026-09-25",
+  "defaultRoots": [
+    "mgp-7102",
+    "mgp-230305",
+    "mgp-286215",
+    "mgp-84793",
+    "mgp-38433",
+    "cmc-michael-izbicki",
+    "mgp-17045",
+    "mgp-69085",
+    "mgp-36621",
+    "mgp-268641",
+    "mgp-339304",
+    "mgp-140052"
+  ],
+  "people": [
+    {
+      "id": "mgp-7102",
+      "mgpId": 7102,
+      "name": "Asuman Aksoy",
+      "year": 1984,
+      "institution": "University of Michigan",
+      "advisors": [
+        "mgp-7771"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=7102"
+        }
+      ]
+    },
+    {
+      "id": "mgp-230305",
+      "mgpId": 230305,
+      "name": "Sarah Cannon",
+      "year": 2018,
+      "institution": "Georgia Institute of Technology",
+      "advisors": [
+        "mgp-81757"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=230305"
+        }
+      ]
+    },
+    {
+      "id": "mgp-286215",
+      "mgpId": 286215,
+      "name": "Robert Cass",
+      "year": 2021,
+      "institution": "Harvard University",
+      "advisors": [
+        "mgp-131465"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=286215"
+        }
+      ]
+    },
+    {
+      "id": "mgp-84793",
+      "mgpId": 84793,
+      "name": "Lenny Fukshansky",
+      "year": 2004,
+      "institution": "University of Texas at Austin",
+      "advisors": [
+        "mgp-4201"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=84793"
+        }
+      ]
+    },
+    {
+      "id": "mgp-38433",
+      "mgpId": 38433,
+      "name": "Mark Lawrence Huber",
+      "year": 1999,
+      "institution": "Cornell University",
+      "advisors": [
+        "mgp-36705"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=38433"
+        }
+      ]
+    },
+    {
+      "id": "cmc-michael-izbicki",
+      "name": "Michael Izbicki",
+      "year": 2017,
+      "institution": "University of California, Riverside",
+      "advisors": [
+        "mgp-131673"
+      ],
+      "sources": [
+        {
+          "label": "Michael Izbicki CV",
+          "url": "https://izbicki.me/cv.pdf"
+        },
+        {
+          "label": "CMC Mathematical Sciences faculty",
+          "url": "https://www.cmc.edu/mathematics/math-faculty"
+        }
+      ],
+      "role": "CMC faculty",
+      "aliases": [
+        "Mike Izbicki"
+      ],
+      "note": "PhD and advisor verified from the faculty CV. No matching MGP record found in the Izbicki surname search on 2026-09-25; the advisor has an MGP record."
+    },
+    {
+      "id": "mgp-17045",
+      "mgpId": 17045,
+      "name": "Chiu-Yen Kao",
+      "year": 2004,
+      "institution": "University of California, Los Angeles",
+      "advisors": [
+        "mgp-11645"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=17045"
+        }
+      ]
+    },
+    {
+      "id": "mgp-69085",
+      "mgpId": 69085,
+      "name": "Sam (Victor Samuel) Nelson",
+      "year": 2002,
+      "institution": "Louisiana State University",
+      "advisors": [
+        "mgp-77134"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=69085"
+        }
+      ]
+    },
+    {
+      "id": "mgp-36621",
+      "mgpId": 36621,
+      "name": "Michael Davlin O'Neill",
+      "year": 1995,
+      "institution": "University of California, Los Angeles",
+      "advisors": [
+        "mgp-28059"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=36621"
+        }
+      ]
+    },
+    {
+      "id": "mgp-268641",
+      "mgpId": 268641,
+      "name": "Evan Rosenman",
+      "year": 2020,
+      "institution": "Stanford University",
+      "advisors": [
+        "mgp-40893",
+        "mgp-160633"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=268641"
+        }
+      ]
+    },
+    {
+      "id": "mgp-339304",
+      "mgpId": 339304,
+      "name": "Raylen Teal Witter",
+      "year": 2025,
+      "institution": "New York University",
+      "advisors": [
+        "mgp-264283",
+        "mgp-106247"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=339304"
+        }
+      ]
+    },
+    {
+      "id": "mgp-140052",
+      "mgpId": 140052,
+      "name": "Helen Wong",
+      "year": 2007,
+      "institution": "Yale University",
+      "advisors": [
+        "mgp-24444"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=140052"
+        }
+      ]
+    },
+    {
+      "id": "mgp-131673",
+      "mgpId": 131673,
+      "name": "Christian Robert Shelton",
+      "year": 2001,
+      "institution": "Massachusetts Institute of Technology",
+      "advisors": [
+        "mgp-113395"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=131673"
+        }
+      ]
+    },
+    {
+      "id": "mgp-7771",
+      "mgpId": 7771,
+      "name": "Melapalayam Srinivasan Ramanujan",
+      "year": 1958,
+      "institution": "Annamalai University",
+      "advisors": [
+        "mgp-132244",
+        "mgp-132245"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=7771"
+        }
+      ]
+    },
+    {
+      "id": "mgp-81757",
+      "mgpId": 81757,
+      "name": "Dana Randall",
+      "year": 1994,
+      "institution": "University of California, Berkeley",
+      "advisors": [
+        "mgp-24930"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=81757"
+        }
+      ]
+    },
+    {
+      "id": "mgp-131465",
+      "mgpId": 131465,
+      "name": "Mark Kisin",
+      "year": 1998,
+      "institution": "Princeton University",
+      "advisors": [
+        "mgp-18855"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=131465"
+        }
+      ]
+    },
+    {
+      "id": "mgp-4201",
+      "mgpId": 4201,
+      "name": "Jeffrey David Vaaler",
+      "year": 1974,
+      "institution": "University of Illinois at Urbana-Champaign",
+      "advisors": [
+        "mgp-9738"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=4201"
+        }
+      ]
+    },
+    {
+      "id": "mgp-36705",
+      "mgpId": 36705,
+      "name": "David Bernard Shmoys",
+      "year": 1984,
+      "institution": "University of California, Berkeley",
+      "advisors": [
+        "mgp-25276"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=36705"
+        }
+      ]
+    },
+    {
+      "id": "mgp-11645",
+      "mgpId": 11645,
+      "name": "Stanley Joel Osher",
+      "year": 1966,
+      "institution": "New York University",
+      "advisors": [
+        "mgp-13409"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=11645"
+        }
+      ]
+    },
+    {
+      "id": "mgp-77134",
+      "mgpId": 77134,
+      "name": "Richard Andrew Litherland",
+      "year": 1979,
+      "institution": "University of Cambridge",
+      "advisors": [
+        "mgp-13159"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=77134"
+        }
+      ]
+    },
+    {
+      "id": "mgp-28059",
+      "mgpId": 28059,
+      "name": "John Brady Garnett",
+      "year": 1966,
+      "institution": "University of Washington",
+      "advisors": [
+        "mgp-28305"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=28059"
+        }
+      ]
+    },
+    {
+      "id": "mgp-40893",
+      "mgpId": 40893,
+      "name": "Arthur Bradley Owen",
+      "year": 1987,
+      "institution": "Stanford University",
+      "advisors": [
+        "mgp-40881"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=40893"
+        }
+      ]
+    },
+    {
+      "id": "mgp-160633",
+      "mgpId": 160633,
+      "name": "Michael Baiocchi",
+      "year": 2011,
+      "institution": "University of Pennsylvania",
+      "advisors": [
+        "mgp-80563"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=160633"
+        }
+      ]
+    },
+    {
+      "id": "mgp-264283",
+      "mgpId": 264283,
+      "name": "Christopher Musco",
+      "year": 2018,
+      "institution": "Massachusetts Institute of Technology",
+      "advisors": [
+        "mgp-100625"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=264283"
+        }
+      ]
+    },
+    {
+      "id": "mgp-106247",
+      "mgpId": 106247,
+      "name": "Lisa Hellerstein",
+      "year": 1989,
+      "institution": "University of California, Berkeley",
+      "advisors": [
+        "mgp-25275"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=106247"
+        }
+      ]
+    },
+    {
+      "id": "mgp-24444",
+      "mgpId": 24444,
+      "name": "Andrew John Casson",
+      "year": 1965,
+      "institution": "University of Cambridge",
+      "advisors": [
+        "mgp-24418"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=24444"
+        }
+      ]
+    },
+    {
+      "id": "mgp-132244",
+      "mgpId": 132244,
+      "name": "V. Ganapathy Iyer",
+      "year": 1938,
+      "institution": "University of Madras",
+      "advisors": [
+        "mgp-132246"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=132244"
+        }
+      ]
+    },
+    {
+      "id": "mgp-132245",
+      "mgpId": 132245,
+      "name": "Cadambathur Tiruvenkatacharlu Rajagopal",
+      "year": null,
+      "institution": "University of Madras",
+      "advisors": [
+        "mgp-18536",
+        "mgp-91314"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=132245"
+        }
+      ]
+    },
+    {
+      "id": "mgp-24930",
+      "mgpId": 24930,
+      "name": "Alistair Sinclair",
+      "year": 1988,
+      "institution": "The University of Edinburgh",
+      "advisors": [
+        "mgp-71827"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=24930"
+        }
+      ]
+    },
+    {
+      "id": "mgp-18855",
+      "mgpId": 18855,
+      "name": "Nicholas Michael Katz",
+      "year": 1966,
+      "institution": "Princeton University",
+      "advisors": [
+        "mgp-13357"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=18855"
+        }
+      ]
+    },
+    {
+      "id": "mgp-9738",
+      "mgpId": 9738,
+      "name": "Harold George Diamond",
+      "year": 1965,
+      "institution": "Stanford University",
+      "advisors": [
+        "mgp-6479"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=9738"
+        }
+      ]
+    },
+    {
+      "id": "mgp-25276",
+      "mgpId": 25276,
+      "name": "Eugene Leighton Lawler",
+      "year": 1963,
+      "institution": "Harvard University",
+      "advisors": [
+        "mgp-13305"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=25276"
+        }
+      ]
+    },
+    {
+      "id": "mgp-113395",
+      "mgpId": 113395,
+      "name": "Tomaso A. Poggio",
+      "year": 1970,
+      "institution": "Università di Genova",
+      "advisors": [
+        "mgp-113400"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=113395"
+        }
+      ]
+    },
+    {
+      "id": "mgp-13409",
+      "mgpId": 13409,
+      "name": "Jacob Theodore (Jack) Schwartz",
+      "year": 1951,
+      "institution": "Yale University",
+      "advisors": [
+        "mgp-4299"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=13409"
+        }
+      ]
+    },
+    {
+      "id": "mgp-13159",
+      "mgpId": 13159,
+      "name": "Cameron McAllan Gordon",
+      "year": 1971,
+      "institution": "University of Cambridge",
+      "advisors": [
+        "mgp-24423"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=13159"
+        }
+      ]
+    },
+    {
+      "id": "mgp-28305",
+      "mgpId": 28305,
+      "name": "Irving Leonard Glicksberg",
+      "year": 1951,
+      "institution": "University of California, Los Angeles",
+      "advisors": [
+        "mgp-13235"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=28305"
+        }
+      ]
+    },
+    {
+      "id": "mgp-40881",
+      "mgpId": 40881,
+      "name": "Jerome Harold Friedman",
+      "year": 1967,
+      "institution": "University of California, Berkeley",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=40881"
+        }
+      ],
+      "note": "No advisor is recorded in the Mathematics Genealogy Project. This is a limit of the record, not evidence of no advisor."
+    },
+    {
+      "id": "mgp-80563",
+      "mgpId": 80563,
+      "name": "Dylan Small",
+      "year": 2002,
+      "institution": "Stanford University",
+      "advisors": [
+        "mgp-40890"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=80563"
+        }
+      ]
+    },
+    {
+      "id": "mgp-100625",
+      "mgpId": 100625,
+      "name": "Jonathan A. Kelner",
+      "year": 2006,
+      "institution": "Massachusetts Institute of Technology",
+      "advisors": [
+        "mgp-65065"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=100625"
+        }
+      ]
+    },
+    {
+      "id": "mgp-25275",
+      "mgpId": 25275,
+      "name": "Richard Manning Karp",
+      "year": 1959,
+      "institution": "Harvard University",
+      "advisors": [
+        "mgp-13305"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=25275"
+        }
+      ]
+    },
+    {
+      "id": "mgp-24418",
+      "mgpId": 24418,
+      "name": "Charles Terrence Clegg (Terry) Wall",
+      "year": 1959,
+      "institution": "University of Cambridge",
+      "advisors": [
+        "mgp-24417",
+        "mgp-24507"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=24418"
+        }
+      ]
+    },
+    {
+      "id": "mgp-132246",
+      "mgpId": 132246,
+      "name": "Ramaswamy S. Vaidyanathaswamy",
+      "year": null,
+      "institution": "University of Cambridge and The University of Edinburgh",
+      "advisors": [
+        "mgp-18571",
+        "mgp-13135",
+        "mgp-97121"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=132246"
+        }
+      ]
+    },
+    {
+      "id": "mgp-18536",
+      "mgpId": 18536,
+      "name": "T. (Tirukkannapuram) Vijayaraghavan",
+      "year": 1929,
+      "institution": "University of Oxford",
+      "advisors": [
+        "mgp-17806"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=18536"
+        }
+      ]
+    },
+    {
+      "id": "mgp-91314",
+      "mgpId": 91314,
+      "name": "K. Ananda Rau",
+      "year": 1919,
+      "institution": "University of Cambridge",
+      "advisors": [
+        "mgp-17806"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=91314"
+        }
+      ]
+    },
+    {
+      "id": "mgp-71827",
+      "mgpId": 71827,
+      "name": "Mark Richard Jerrum",
+      "year": 1981,
+      "institution": "The University of Edinburgh",
+      "advisors": [
+        "mgp-18757"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=71827"
+        }
+      ]
+    },
+    {
+      "id": "mgp-13357",
+      "mgpId": 13357,
+      "name": "Bernard Morris Dwork",
+      "year": 1954,
+      "institution": "Columbia University",
+      "advisors": [
+        "mgp-7690",
+        "mgp-7652"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=13357"
+        }
+      ]
+    },
+    {
+      "id": "mgp-6479",
+      "mgpId": 6479,
+      "name": "Paul Joseph Cohen",
+      "year": 1958,
+      "institution": "The University of Chicago",
+      "advisors": [
+        "mgp-6388"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=6479"
+        }
+      ]
+    },
+    {
+      "id": "mgp-13305",
+      "mgpId": 13305,
+      "name": "Anthony Gervin Oettinger",
+      "year": 1954,
+      "institution": "Harvard University",
+      "advisors": [
+        "mgp-18953"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=13305"
+        }
+      ]
+    },
+    {
+      "id": "mgp-113400",
+      "mgpId": 113400,
+      "name": "Antonio Borsellino",
+      "year": 1938,
+      "institution": "Università di Pisa",
+      "advisors": [
+        "mgp-160628",
+        "mgp-16966"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=113400"
+        }
+      ]
+    },
+    {
+      "id": "mgp-4299",
+      "mgpId": 4299,
+      "name": "Nelson Dunford",
+      "year": 1936,
+      "institution": "Brown University",
+      "advisors": [
+        "mgp-4740"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=4299"
+        }
+      ]
+    },
+    {
+      "id": "mgp-24423",
+      "mgpId": 24423,
+      "name": "John F. P. Hudson",
+      "year": 1963,
+      "institution": "University of Cambridge",
+      "advisors": [
+        "mgp-24417"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=24423"
+        }
+      ]
+    },
+    {
+      "id": "mgp-13235",
+      "mgpId": 13235,
+      "name": "Richard Friederich Arens",
+      "year": 1945,
+      "institution": "Harvard University",
+      "advisors": [
+        "mgp-16942"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=13235"
+        }
+      ]
+    },
+    {
+      "id": "mgp-40890",
+      "mgpId": 40890,
+      "name": "Tze Leung Lai",
+      "year": 1971,
+      "institution": "Columbia University",
+      "advisors": [
+        "mgp-40896"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=40890"
+        }
+      ]
+    },
+    {
+      "id": "mgp-65065",
+      "mgpId": 65065,
+      "name": "Daniel Alan Spielman",
+      "year": 1995,
+      "institution": "Massachusetts Institute of Technology",
+      "advisors": [
+        "mgp-64971"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=65065"
+        }
+      ]
+    },
+    {
+      "id": "mgp-24417",
+      "mgpId": 24417,
+      "name": "E. Christopher (Eric) Zeeman",
+      "year": 1955,
+      "institution": "University of Cambridge",
+      "advisors": [
+        "mgp-1406"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=24417"
+        }
+      ]
+    },
+    {
+      "id": "mgp-24507",
+      "mgpId": 24507,
+      "name": "J. Frank (John) Adams",
+      "year": 1956,
+      "institution": "University of Cambridge",
+      "advisors": [
+        "mgp-1406"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=24507"
+        }
+      ]
+    },
+    {
+      "id": "mgp-18571",
+      "mgpId": 18571,
+      "name": "Edmund Taylor Whittaker",
+      "year": 1895,
+      "institution": "University of Cambridge",
+      "advisors": [
+        "mgp-17829",
+        "mgp-17467"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=18571"
+        }
+      ]
+    },
+    {
+      "id": "mgp-13135",
+      "mgpId": 13135,
+      "name": "Henry Frederick Baker",
+      "year": null,
+      "institution": "University of Cambridge",
+      "advisors": [
+        "mgp-7824"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=13135"
+        }
+      ]
+    },
+    {
+      "id": "mgp-97121",
+      "mgpId": 97121,
+      "name": "Herbert Westren Turnbull",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=97121"
+        }
+      ],
+      "note": "No advisor is recorded in the Mathematics Genealogy Project. This is a limit of the record, not evidence of no advisor."
+    },
+    {
+      "id": "mgp-17806",
+      "mgpId": 17806,
+      "name": "G. H. (Godfrey Harold) Hardy",
+      "year": 1903,
+      "institution": "University of Cambridge",
+      "advisors": [
+        "mgp-31354",
+        "mgp-18571"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=17806"
+        }
+      ]
+    },
+    {
+      "id": "mgp-18757",
+      "mgpId": 18757,
+      "name": "Leslie Gabriel Valiant",
+      "year": 1974,
+      "institution": "University of Warwick",
+      "advisors": [
+        "mgp-51896"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=18757"
+        }
+      ]
+    },
+    {
+      "id": "mgp-7690",
+      "mgpId": 7690,
+      "name": "Emil Artin",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=7690"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-7652",
+      "mgpId": 7652,
+      "name": "John Torrence Tate, Jr.",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=7652"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-6388",
+      "mgpId": 6388,
+      "name": "Antoni Zygmund",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=6388"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-18953",
+      "mgpId": 18953,
+      "name": "Howard Hathaway Aiken",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=18953"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-160628",
+      "mgpId": 160628,
+      "name": "Giulio Racah",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=160628"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-16966",
+      "mgpId": 16966,
+      "name": "Luigi Puccianti",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=16966"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-4740",
+      "mgpId": 4740,
+      "name": "Jacob David Tamarkin",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=4740"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-16942",
+      "mgpId": 16942,
+      "name": "Garrett Birkhoff",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=16942"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-40896",
+      "mgpId": 40896,
+      "name": "David Oliver Siegmund",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=40896"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-64971",
+      "mgpId": 64971,
+      "name": "Michael Fredric Sipser",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=64971"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-1406",
+      "mgpId": 1406,
+      "name": "Shaun Wylie",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=1406"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-17829",
+      "mgpId": 17829,
+      "name": "Andrew Russell Forsyth",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=17829"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-17467",
+      "mgpId": 17467,
+      "name": "George Howard Darwin",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=17467"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-7824",
+      "mgpId": 7824,
+      "name": "Arthur Cayley",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=7824"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-31354",
+      "mgpId": 31354,
+      "name": "Augustus Edward Hough Love",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=31354"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    },
+    {
+      "id": "mgp-51896",
+      "mgpId": 51896,
+      "name": "Michael Stewart Paterson",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=51896"
+        }
+      ],
+      "incomplete": true,
+      "note": "Ancestor record has not yet been fetched; the relationship is sourced on the student’s record."
+    }
+  ],
+  "warnings": [],
+  "rosterSource": {
+    "label": "CMC Mathematical Sciences faculty",
+    "url": "https://www.cmc.edu/mathematics/math-faculty"
+  },
+  "rosterNote": "Includes the 12 faculty listed before Visiting Faculty on the departmental page, interpreted as the tenured/tenure-track roster; excludes visiting and emeritus faculty. Verified September 25, 2026. Historical MGP links may describe mentorship or other academic relationships rather than modern PhD supervision. An empty advisor list means no advisor is documented in this snapshot."
+}

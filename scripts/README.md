@@ -1,0 +1,26 @@
+# Updating the data
+
+The website is a static snapshot. It cannot fetch MGP directly from a browser: MGP does not provide the cross-origin API a static site would need. Use this small local importer to create a JSON file, then import that file in the website.
+
+```sh
+python -m pip install -r requirements.txt
+python scripts/fetch_genealogy.py --search 'Sarah Cannon'
+python scripts/fetch_genealogy.py 230305 7102 --output data/custom.json
+python scripts/fetch_genealogy.py --names-file my-people.txt --output data/custom.json
+```
+
+Names must be quoted at the command line. A names file contains one name, numeric MGP ID, or MGP person URL per line. Search is deliberately conservative: when more than one record matches, inspect the candidates and pass the correct ID. This avoids silently conflating people with the same name.
+
+The importer follows **advisors only**, never students. It caches source HTML under `.cache/mgp/` (excluded from Git), makes requests sequentially at least 10 seconds apart, and defaults to at most 250 fetched records and 40 generations. `--max-people` and `--max-depth` adjust these bounds; `--delay` can make requests slower. Repeating a command reuses cached pages. To refresh a particular record, remove its cached HTML, or use a fresh `--cache` directory. Network/parser errors stop the import with an error; the most recent saved snapshot remains. Source records at a depth/count boundary remain explicit incomplete placeholders, not invented terminal ancestors.
+
+Refresh the CMC collection with:
+
+```sh
+python scripts/fetch_genealogy.py --overlay data/cmc-roots.json --output data/genealogy.json
+```
+
+`data/cmc-roots.json` holds the selected faculty and sourced additions where MGP has no record. Update these manually from cited primary sources when the roster changes. The importer does not infer advisors from dissertation committee memberships or postdoctoral mentors.
+
+The JSON format is `{title, description, updated, defaultRoots, people}`. Each person has a stable `id`, `name`, `year` (nullable), `institution`, `advisors` (IDs), and `sources` (`{label,url}` pairs). MGP records also have `mgpId`. Optional fields include `aliases`, `role`, `note`, and `incomplete`. Each advisor edge is substantiated by the **student's** sources. Empty advisors mean the snapshot has no documented advisor; they do not establish that a person had no advisor. Historical MGP relationships are not necessarily modern PhD supervision, and records may contain errors. `rosterSource`, `rosterNote`, and `warnings` provide collection-level context.
+
+This project is independent of the Mathematics Genealogy Project. Please cite and support [MGP](https://www.mathgenealogy.org/) when using its records.

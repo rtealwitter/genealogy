@@ -1,0 +1,24 @@
+{
+  "name": "genealogy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Explore and print shared mathematical ancestry",
+  "scripts": {
+    "dev": "python3 -m http.server 8765",
+    "vendor": "node scripts/vendor.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "playwright test"
+  },
+  "dependencies": {
+    "@dagrejs/dagre": "^1.1.5",
+    "jspdf": "^4.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "esbuild": "^0.27.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

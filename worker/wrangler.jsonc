@@ -1,0 +1,8 @@
+{
+  "name": "genealogy-api",
+  "main": "index.js",
+  "compatibility_date": "2026-09-25",
+  "workers_dev": true,
+  "durable_objects": { "bindings": [{ "name": "MGP", "class_name": "MGPBroker" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["MGPBroker"] }]
+}
