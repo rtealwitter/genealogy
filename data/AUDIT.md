@@ -1,5 +1,7 @@
 # CMC snapshot audit — September 25, 2026
 
+This records the original 506-person ancestry snapshot. The [September 27 student extension](STUDENTS-AUDIT.md) adds direct faculty students and co-advisor ancestry while preserving every record and link audited here.
+
 **Status: all reachable source records fetched.** The traversal finished normally with no incomplete placeholders, missing references, parser failures, or depth/count-limit warnings. This means closure of the documented MGP links reachable from the selected CMC faculty; it does not establish that MGP contains every real historical advisor.
 
 | Check | Result |

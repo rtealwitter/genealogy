@@ -1,7 +1,7 @@
 {
   "title": "The CMC mathematical family",
-  "description": "Advisor lineages of the regular faculty in Claremont McKenna College’s Department of Mathematical Sciences. Relationships are sourced from the Mathematics Genealogy Project and faculty CVs.",
-  "updated": "2026-09-25",
+  "description": "Advisor lineages of the regular faculty in Claremont McKenna College’s Department of Mathematical Sciences. Relationships are sourced from the Mathematics Genealogy Project and faculty CVs. Includes direct students recorded by MGP and their co-advisor lineages.",
+  "updated": "2026-09-27",
   "defaultRoots": [
     "mgp-7102",
     "mgp-230305",
@@ -286,6 +286,217 @@
       ]
     },
     {
+      "id": "mgp-297952",
+      "mgpId": 297952,
+      "name": "Daniel Akech Thiong",
+      "year": 2023,
+      "institution": "Claremont Graduate University",
+      "advisors": [
+        "mgp-7102"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=297952"
+        }
+      ]
+    },
+    {
+      "id": "mgp-218552",
+      "mgpId": 218552,
+      "name": "Monairah Alansari",
+      "year": 2017,
+      "institution": "Claremont Graduate University",
+      "advisors": [
+        "mgp-7102"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=218552"
+        }
+      ]
+    },
+    {
+      "id": "mgp-296763",
+      "mgpId": 296763,
+      "name": "Maxwell Forst",
+      "year": 2023,
+      "institution": "Claremont Graduate University",
+      "advisors": [
+        "mgp-84793"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=296763"
+        }
+      ]
+    },
+    {
+      "id": "mgp-163955",
+      "mgpId": 163955,
+      "name": "Glenn Henshaw",
+      "year": 2012,
+      "institution": "Wesleyan University",
+      "advisors": [
+        "mgp-10554",
+        "mgp-84793"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=163955"
+        }
+      ]
+    },
+    {
+      "id": "mgp-335214",
+      "mgpId": 335214,
+      "name": "Sehun Jeong",
+      "year": 2025,
+      "institution": "Claremont Graduate University",
+      "advisors": [
+        "mgp-84793"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=335214"
+        }
+      ]
+    },
+    {
+      "id": "mgp-282610",
+      "mgpId": 282610,
+      "name": "David Booth Kogan",
+      "year": 2022,
+      "institution": "Claremont Graduate University",
+      "advisors": [
+        "mgp-84793"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=282610"
+        }
+      ]
+    },
+    {
+      "id": "mgp-191164",
+      "mgpId": 191164,
+      "name": "Xun Sun",
+      "year": 2015,
+      "institution": "Claremont Graduate University",
+      "advisors": [
+        "mgp-84793"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=191164"
+        }
+      ]
+    },
+    {
+      "id": "mgp-134042",
+      "mgpId": 134042,
+      "name": "Wai Jing Jenny Law",
+      "year": 2009,
+      "institution": "Duke University",
+      "advisors": [
+        "mgp-38433"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=134042"
+        }
+      ]
+    },
+    {
+      "id": "mgp-182438",
+      "mgpId": 182438,
+      "name": "Sarah Schott",
+      "year": 2012,
+      "institution": "Duke University",
+      "advisors": [
+        "mgp-38433"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=182438"
+        }
+      ]
+    },
+    {
+      "id": "mgp-273822",
+      "mgpId": 273822,
+      "name": "Patrick Choi",
+      "year": 2016,
+      "institution": "Claremont Graduate University",
+      "advisors": [
+        "mgp-17045",
+        "mgp-35037",
+        "mgp-100768"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=273822"
+        }
+      ]
+    },
+    {
+      "id": "mgp-269757",
+      "mgpId": 269757,
+      "name": "Vladimir Vadimovich Delengov",
+      "year": 2018,
+      "institution": "Claremont Graduate University",
+      "advisors": [
+        "mgp-17045"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=269757"
+        }
+      ]
+    },
+    {
+      "id": "mgp-240959",
+      "mgpId": 240959,
+      "name": "Shu Su",
+      "year": 2010,
+      "institution": "The Ohio State University",
+      "advisors": [
+        "mgp-17045"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=240959"
+        }
+      ]
+    },
+    {
+      "id": "mgp-178986",
+      "mgpId": 178986,
+      "name": "Ying Wang",
+      "year": 2010,
+      "institution": "The Ohio State University",
+      "advisors": [
+        "mgp-17045"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=178986"
+        }
+      ]
+    },
+    {
       "id": "mgp-7771",
       "mgpId": 7771,
       "name": "Melapalayam Srinivasan Ramanujan",
@@ -491,6 +702,54 @@
         {
           "label": "Mathematics Genealogy Project",
           "url": "https://www.mathgenealogy.org/id.php?id=24444"
+        }
+      ]
+    },
+    {
+      "id": "mgp-10554",
+      "mgpId": 10554,
+      "name": "Wai Kiu Chan",
+      "year": 1996,
+      "institution": "The Ohio State University",
+      "advisors": [
+        "mgp-11353"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=10554"
+        }
+      ]
+    },
+    {
+      "id": "mgp-35037",
+      "mgpId": 35037,
+      "name": "Ali Nadim",
+      "year": 1986,
+      "institution": "Massachusetts Institute of Technology",
+      "advisors": [
+        "mgp-63409"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=35037"
+        }
+      ]
+    },
+    {
+      "id": "mgp-100768",
+      "mgpId": 100768,
+      "name": "Shui-Fung Lam",
+      "year": 1975,
+      "institution": "The Pennsylvania State University",
+      "advisors": [
+        "mgp-82048"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=100768"
         }
       ]
     },
@@ -736,6 +995,54 @@
       ]
     },
     {
+      "id": "mgp-11353",
+      "mgpId": 11353,
+      "name": "John Sollion Hsia",
+      "year": 1966,
+      "institution": "Massachusetts Institute of Technology",
+      "advisors": [
+        "mgp-11765"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=11353"
+        }
+      ]
+    },
+    {
+      "id": "mgp-63409",
+      "mgpId": 63409,
+      "name": "Howard Brenner",
+      "year": 1958,
+      "institution": "New York University",
+      "advisors": [
+        "mgp-66295"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=63409"
+        }
+      ]
+    },
+    {
+      "id": "mgp-82048",
+      "mgpId": 82048,
+      "name": "Ravi Sethi",
+      "year": 1973,
+      "institution": "Princeton University",
+      "advisors": [
+        "mgp-44128"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=82048"
+        }
+      ]
+    },
+    {
       "id": "mgp-132246",
       "mgpId": 132246,
       "name": "Ramaswamy S. Vaidyanathaswamy",
@@ -976,6 +1283,55 @@
         {
           "label": "Mathematics Genealogy Project",
           "url": "https://www.mathgenealogy.org/id.php?id=24507"
+        }
+      ]
+    },
+    {
+      "id": "mgp-11765",
+      "mgpId": 11765,
+      "name": "Nesmith Cornett Ankeny",
+      "year": 1951,
+      "institution": "Princeton University",
+      "advisors": [
+        "mgp-7690"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=11765"
+        }
+      ]
+    },
+    {
+      "id": "mgp-66295",
+      "mgpId": 66295,
+      "name": "John Happel",
+      "year": null,
+      "institution": "",
+      "advisors": [
+        "mgp-196325"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=66295"
+        }
+      ]
+    },
+    {
+      "id": "mgp-44128",
+      "mgpId": 44128,
+      "name": "Jeffrey David Ullman",
+      "year": 1966,
+      "institution": "Princeton University",
+      "advisors": [
+        "mgp-82013",
+        "mgp-82034"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=44128"
         }
       ]
     },
@@ -1236,6 +1592,53 @@
         {
           "label": "Mathematics Genealogy Project",
           "url": "https://www.mathgenealogy.org/id.php?id=1406"
+        }
+      ]
+    },
+    {
+      "id": "mgp-196325",
+      "mgpId": 196325,
+      "name": "Donald F. Othmer",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=196325"
+        }
+      ],
+      "note": "No advisor is recorded in the Mathematics Genealogy Project. This is a limit of the record, not evidence of no advisor."
+    },
+    {
+      "id": "mgp-82013",
+      "mgpId": 82013,
+      "name": "Arthur Jay Bernstein",
+      "year": 1962,
+      "institution": "Columbia University",
+      "advisors": [
+        "mgp-92760"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=82013"
+        }
+      ]
+    },
+    {
+      "id": "mgp-82034",
+      "mgpId": 82034,
+      "name": "Archie Charles McKellar",
+      "year": 1965,
+      "institution": "University of Illinois at Urbana-Champaign",
+      "advisors": [
+        "mgp-92718"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=82034"
         }
       ]
     },
@@ -1530,6 +1933,38 @@
       ]
     },
     {
+      "id": "mgp-92760",
+      "mgpId": 92760,
+      "name": "Wan Hee Kim",
+      "year": 1956,
+      "institution": "University of Utah",
+      "advisors": [
+        "mgp-128055"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=92760"
+        }
+      ]
+    },
+    {
+      "id": "mgp-92718",
+      "mgpId": 92718,
+      "name": "Sundaram Seshu",
+      "year": 1955,
+      "institution": "University of Illinois at Urbana-Champaign",
+      "advisors": [
+        "mgp-92644"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=92718"
+        }
+      ]
+    },
+    {
       "id": "mgp-101929",
       "mgpId": 101929,
       "name": "Edward John Routh",
@@ -1789,6 +2224,38 @@
         {
           "label": "Mathematics Genealogy Project",
           "url": "https://www.mathgenealogy.org/id.php?id=7451"
+        }
+      ]
+    },
+    {
+      "id": "mgp-128055",
+      "mgpId": 128055,
+      "name": "Seymour Blair Hammond",
+      "year": 1958,
+      "institution": "Purdue University",
+      "advisors": [
+        "mgp-169330"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=128055"
+        }
+      ]
+    },
+    {
+      "id": "mgp-92644",
+      "mgpId": 92644,
+      "name": "Willis Laurens Emery",
+      "year": 1947,
+      "institution": "Iowa State University",
+      "advisors": [
+        "mgp-92761"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=92644"
         }
       ]
     },
@@ -2152,6 +2619,38 @@
         {
           "label": "Mathematics Genealogy Project",
           "url": "https://www.mathgenealogy.org/id.php?id=18589"
+        }
+      ]
+    },
+    {
+      "id": "mgp-169330",
+      "mgpId": 169330,
+      "name": "Steven Freeman, Jr.",
+      "year": 1926,
+      "institution": "Massachusetts Institute of Technology",
+      "advisors": [
+        "mgp-197761"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=169330"
+        }
+      ]
+    },
+    {
+      "id": "mgp-92761",
+      "mgpId": 92761,
+      "name": "John Douglas Ryder",
+      "year": 1944,
+      "institution": "Iowa State University",
+      "advisors": [
+        "mgp-131580"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=92761"
         }
       ]
     },
@@ -2574,6 +3073,38 @@
         {
           "label": "Mathematics Genealogy Project",
           "url": "https://www.mathgenealogy.org/id.php?id=57706"
+        }
+      ]
+    },
+    {
+      "id": "mgp-197761",
+      "mgpId": 197761,
+      "name": "Frederick Samuel Dellenbaugh, Jr.",
+      "year": 1926,
+      "institution": "Massachusetts Institute of Technology",
+      "advisors": [
+        "mgp-84507"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=197761"
+        }
+      ]
+    },
+    {
+      "id": "mgp-131580",
+      "mgpId": 131580,
+      "name": "Wallace L. Cassell",
+      "year": 1928,
+      "institution": "University of Colorado at Boulder",
+      "advisors": [
+        "mgp-111345"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=131580"
         }
       ]
     },
@@ -3046,6 +3577,38 @@
       ]
     },
     {
+      "id": "mgp-84507",
+      "mgpId": 84507,
+      "name": "Vannevar Bush",
+      "year": 1916,
+      "institution": "Massachusetts Institute of Technology",
+      "advisors": [
+        "mgp-24154",
+        "mgp-205173"
+      ],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=84507"
+        }
+      ]
+    },
+    {
+      "id": "mgp-111345",
+      "mgpId": 111345,
+      "name": "Robert Peer Siskind",
+      "year": 1925,
+      "institution": "Harvard University",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=111345"
+        }
+      ],
+      "note": "No advisor is recorded in the Mathematics Genealogy Project. This is a limit of the record, not evidence of no advisor."
+    },
+    {
       "id": "mgp-133367",
       "mgpId": 133367,
       "name": "Stephen Whisson",
@@ -3435,6 +3998,36 @@
           "url": "https://www.mathgenealogy.org/id.php?id=108295"
         }
       ]
+    },
+    {
+      "id": "mgp-24154",
+      "mgpId": 24154,
+      "name": "Arthur Edwin Kennelly",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=24154"
+        }
+      ],
+      "note": "No advisor is recorded in the Mathematics Genealogy Project. This is a limit of the record, not evidence of no advisor."
+    },
+    {
+      "id": "mgp-205173",
+      "mgpId": 205173,
+      "name": "Dugald Caleb Jackson",
+      "year": null,
+      "institution": "",
+      "advisors": [],
+      "sources": [
+        {
+          "label": "Mathematics Genealogy Project",
+          "url": "https://www.mathgenealogy.org/id.php?id=205173"
+        }
+      ],
+      "note": "No advisor is recorded in the Mathematics Genealogy Project. This is a limit of the record, not evidence of no advisor."
     },
     {
       "id": "mgp-133368",
@@ -8291,6 +8884,22 @@
     }
   ],
   "warnings": [],
+  "defaultStudents": [
+    "mgp-297952",
+    "mgp-218552",
+    "mgp-296763",
+    "mgp-163955",
+    "mgp-335214",
+    "mgp-282610",
+    "mgp-191164",
+    "mgp-134042",
+    "mgp-182438",
+    "mgp-273822",
+    "mgp-269757",
+    "mgp-240959",
+    "mgp-178986"
+  ],
+  "studentNote": "Direct students listed by MGP for the selected people; student records verify the advisor links. This is not a complete list of everyone they have supervised. Student lookup unavailable without an identified MGP record: Michael Izbicki.",
   "rosterSource": {
     "label": "CMC Mathematical Sciences faculty",
     "url": "https://www.cmc.edu/mathematics/math-faculty"

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fetch an explicitly bounded set of MGP ancestors, with cached HTML and citations."""
+"""Fetch bounded MGP ancestry and optional direct students, with cached HTML and citations."""
 import argparse
 import hashlib
 import json
@@ -73,6 +73,30 @@ class MGP:
             candidates.setdefault(identifier, {'id': identifier, 'name': clean(a.get_text()), 'detail': clean(row.get_text(' ', strip=True)) if row else ''})
         return list(candidates.values())
 
+    def students(self, identifier):
+        """Read direct student rows only; descendant counts are not student records."""
+        soup = self.get('id.php?id=' + str(identifier))
+        if soup.find('h2') is None:
+            raise ValueError(f'MGP record {identifier} has no person heading.')
+        if 'No students known.' in soup.get_text(' ', strip=True):
+            return []
+        marker = next((p for p in soup.find_all('p')
+                       if re.match(r'^Students?:', clean(p.get_text(' ', strip=True)))), None)
+        table = marker.find_next('table') if marker else None
+        if table is None or not {'Name', 'School', 'Year'}.issubset(
+                {clean(th.get_text()) for th in table.find_all('th')}):
+            raise ValueError(f'Unrecognized student table in MGP record {identifier}.')
+        students = {}
+        for row in table.find_all('tr'):
+            cells = row.find_all('td', recursive=False)
+            a = cells[0].select_one('a[href*="id.php?id="]') if cells else None
+            if a:
+                sid = 'mgp-' + re.search(r'id=(\d+)', a['href']).group(1)
+                students.setdefault(sid, {'id': sid, 'name': clean(a.get_text())})
+        if not students:
+            raise ValueError(f'MGP record {identifier} has a student section but no parsed students.')
+        return list(students.values())
+
     def person(self, identifier):
         soup = self.get('id.php?id=' + str(identifier))
         heading = soup.find('h2')
@@ -117,6 +141,7 @@ class MGP:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('people', nargs='*', help='MGP IDs, MGP URLs, or quoted names (ambiguous names require an ID)')
+    parser.add_argument('--include-students', action='store_true', help='Include direct MGP students of selected people, verifying each student’s advisors; also fetch co-advisor ancestors within the same bounds')
     parser.add_argument('--names-file', type=Path, help='UTF-8 file with one name or MGP ID per line')
     parser.add_argument('--search', help='Print candidate MGP IDs and exit')
     parser.add_argument('--output', type=Path, default=ROOT / 'data' / 'custom.json')
@@ -152,12 +177,35 @@ def main():
             roots.append('mgp-' + identifier)
     if not roots:
         parser.error('Provide names/IDs, --names-file, or an overlay with defaultRoots.')
-    queue = deque((identifier, 0) for identifier in roots)
+    student_faculty = {}
+    verified_students = set()
+    student_names = {}
+    unavailable_students = []
+    if args.include_students:
+        for identifier in roots:
+            if not identifier.startswith('mgp-'):
+                unavailable_students.append(people[identifier]['name'])
+                continue
+            for student in client.students(identifier[4:]):
+                student_faculty.setdefault(student['id'], []).append(identifier)
+                student_names[student['id']] = student['name']
+        for sid, name in student_names.items():
+            people.setdefault(sid, {'id': sid, 'mgpId': int(sid[4:]), 'name': name,
+                'year': None, 'institution': '', 'advisors': [], 'incomplete': True,
+                'sources': [{'label': 'Mathematics Genealogy Project', 'url': BASE + 'id.php?id=' + sid[4:]}],
+                'note': 'Listed in a selected faculty member’s student table; the student’s own advisor record has not yet been verified.'})
+    queue = deque((identifier, 0) for identifier in dict.fromkeys(roots + list(student_faculty)))
     seen = set()
     fetched = 0
     warnings = []
     def save():
         document = {'title': overlay.get('title', 'Academic genealogy'), 'description': overlay.get('description', 'A sourced snapshot of advisor relationships from the Mathematics Genealogy Project.'), 'updated': date.today().isoformat(), 'defaultRoots': roots, 'people': list(people.values()), 'warnings': warnings}
+        if args.include_students:
+            document['description'] += ' Includes direct students recorded by MGP and their co-advisor lineages.'
+            document['defaultStudents'] = [sid for sid in student_faculty if sid in verified_students]
+            document['studentNote'] = 'Direct students listed by MGP for the selected people; student records verify the advisor links. This is not a complete list of everyone they have supervised.'
+            if unavailable_students:
+                document['studentNote'] += ' Student lookup unavailable without an identified MGP record: ' + ', '.join(unavailable_students) + '.'
         for key in ['rosterSource', 'rosterNote']:
             if key in overlay:
                 document[key] = overlay[key]
@@ -173,6 +221,10 @@ def main():
         existing = people.get(identifier)
         if identifier.startswith('mgp-') and fetched < args.max_people and depth <= args.max_depth:
             person, advisor_names = client.person(identifier[4:])
+            if identifier in student_faculty and not all(rid in person['advisors'] for rid in student_faculty[identifier]):
+                raise ValueError(f'Student {identifier} does not confirm the faculty advisor link from the student table; inspect both source records.')
+            if identifier in student_faculty:
+                verified_students.add(identifier)
             if existing:
                 person.update({k: v for k, v in existing.items() if k in ['aliases', 'role']})
                 if existing.get('preferredName'):
