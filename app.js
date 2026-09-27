@@ -9,7 +9,7 @@ import {
   descendants,
   subgraph,
   safeUrl,
-} from "./graph.js";
+} from "./graph.js?v=6";
 const $ = (id) => document.getElementById(id),
   NS = "http://www.w3.org/2000/svg";
 const CMC_MAROON = "#981a31",
