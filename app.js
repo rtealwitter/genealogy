@@ -702,7 +702,7 @@ let previewRevision = 0, previewUrl;
 async function updatePosterPreview() {
   const revision = ++previewRevision;
   try {
-    const { getPosterMetrics, createPosterSvg } = await import("./poster.js?v=6");
+    const { getPosterMetrics, createPosterSvg } = await import("./poster.js?v=7");
     const tree = printLayout();
     const m = getPosterMetrics(tree, $("poster-size").value, "landscape");
     $("poster-dimensions").textContent =
@@ -732,7 +732,7 @@ async function download(kind) {
   button.disabled = true;
   $("export-status").textContent = "Preparing…";
   try {
-    const exporter = await import("./poster.js?v=6");
+    const exporter = await import("./poster.js?v=7");
     const options = {
       title: $("poster-title").value || "PhD Genealogy Tree",
       subtitle: selected

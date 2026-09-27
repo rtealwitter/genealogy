@@ -239,22 +239,17 @@ async function drawPoster(layout, options = {}) {
     false,
     "center",
   );
-  const legendY = 175;
-  circle(margin + 4, legendY - 3, 3, '#981a31');
-  text("Selected people", margin + 24, legendY, 9, C.muted);
-  circle(margin + 170, legendY - 3, 3, C.plum);
-  text("Shared ancestors", margin + 182, legendY, 9, C.muted);
-  text(
-    layout.continuations?.length
-      ? "Read down each column · match numbered circles across columns"
-      : "Advisors above · students below",
-    width - margin,
-    legendY,
-    9,
-    C.muted,
-    false,
-    "right",
-  );
+  if (layout.continuations?.length) {
+    text(
+      "Read down each column · match numbered circles across columns",
+      width - margin,
+      175,
+      9,
+      C.muted,
+      false,
+      "right",
+    );
+  }
   path(
     [
       { x: margin, y: 192 },
@@ -378,7 +373,7 @@ async function drawPoster(layout, options = {}) {
     0.8,
   );
   const footer =
-    "Sources: Mathematics Genealogy Project · mathgenealogy.org · cited faculty records";
+    "Sources: Mathematics Genealogy Project · mathgenealogy.org";
   text(
     footer,
     margin,
@@ -395,23 +390,6 @@ async function drawPoster(layout, options = {}) {
     C.muted,
     false,
     "right",
-  );
-  const sourceDate = options.sourceDate
-    ? `Source data: ${clean(options.sourceDate)} · `
-    : "";
-  const incomplete = layout.nodes.filter(
-    (node) => node.person?.incomplete,
-  ).length;
-  const recordNote = incomplete
-    ? `${incomplete} open-circle records not yet retrieved. `
-    : "";
-  const footnote = `${sourceDate}Exported ${new Date().toISOString().slice(0, 10)} · ${recordNote}Historical records may be incomplete.`;
-  text(
-    footnote,
-    margin,
-    height - 29,
-    fit(footnote, 8, width - margin * 2),
-    C.muted,
   );
 
   const fontStyles = fonts
