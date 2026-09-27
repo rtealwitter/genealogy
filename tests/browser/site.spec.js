@@ -350,3 +350,25 @@ test("students highlight with their faculty and generation slider is separate fr
   await expect(page.locator('#poster-dimensions')).toContainText('All generations');
   await expect(page.locator('.node')).toHaveCount(screenCount);
 });
+
+test("changing generations preserves zoom, selection, and the selected person's position", async ({page}) => {
+  await ready(page);
+  const person = page.locator('.node[data-id="mgp-339304"]');
+  await page.locator('.name-chip[data-id="mgp-339304"]').click();
+  const initial = await person.boundingBox();
+  const initialScale = await page.locator('#viewport').evaluate(n => n.getCTM().a);
+  await page.mouse.move(initial.x + initial.width / 2, initial.y + initial.height / 2);
+  await page.mouse.wheel(0, -300);
+  await expect.poll(() => page.locator('#viewport').evaluate(n => n.getCTM().a)).toBeGreaterThan(initialScale);
+  const before = await person.boundingBox();
+  const scale = await page.locator('#viewport').evaluate(n => n.getCTM().a);
+  const count = await page.locator('.node').count();
+  await page.locator('#depth').evaluate(n => { n.value='12'; n.dispatchEvent(new Event('input',{bubbles:true})); });
+  await expect.poll(() => page.locator('.node').count()).toBeLessThan(count);
+  const after = await person.boundingBox();
+  expect(await page.locator('#viewport').evaluate(n => n.getCTM().a)).toBeCloseTo(scale, 6);
+  expect(after.x + after.width / 2).toBeCloseTo(before.x + before.width / 2, 3);
+  expect(after.y + after.height / 2).toBeCloseTo(before.y + before.height / 2, 3);
+  await expect(person).toHaveClass(/selected/);
+  await expect(page.locator('#person-card')).toContainText('R. Teal Witter');
+});

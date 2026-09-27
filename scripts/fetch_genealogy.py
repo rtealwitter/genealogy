@@ -22,6 +22,17 @@ def clean(value):
     return ' '.join(value.split())
 
 
+def mgp_record(identifier, name, **fields):
+    """Use the same identity, source, and missing-value fields for every MGP record."""
+    return {
+        'id': f'mgp-{identifier}', 'mgpId': int(identifier), 'name': name,
+        'year': None, 'institution': '', 'advisors': [],
+        'sources': [{'label': 'Mathematics Genealogy Project',
+                     'url': BASE + 'id.php?id=' + str(identifier)}],
+        **fields,
+    }
+
+
 class MGP:
     def __init__(self, cache, delay=10):
         self.cache = Path(cache)
@@ -110,7 +121,6 @@ class MGP:
             institution = clean(school.get_text()) if school else ''
             match = re.search(r'\b(1[0-9]{3}|20[0-9]{2})\b', degree.get_text(' ', strip=True))
             year = int(match.group()) if match else None
-        advisors = []
         advisor_names = {}
         relationship_notes = []
         for p in soup.find_all('p'):
@@ -118,11 +128,11 @@ class MGP:
             if label:
                 for a in p.select('a[href*="id.php?id="]'):
                     aid = 'mgp-' + re.search(r'id=(\d+)', a['href']).group(1)
-                    if aid not in advisors:
-                        advisors.append(aid)
+                    if aid not in advisor_names:
                         advisor_names[aid] = clean(a.get_text())
                         if label.group(1).lower() not in ('advisor', 'adviser', 'doctoral advisor'):
                             relationship_notes.append(f'MGP labels the relationship to {advisor_names[aid]} as {label.group(1).lower()}.')
+        advisors = list(advisor_names)
         # Stop if MGP introduces a relationship label this parser does not understand.
         # Advisor links occur before the Student/Students section; never infer from descendants.
         header = re.split(r'Students?:|No students known\.', str(soup).split('</h2>', 1)[1], maxsplit=1)[0]
@@ -130,7 +140,7 @@ class MGP:
                          for a in BeautifulSoup(header, 'html.parser').select('a[href*="id.php?id="]')}
         if linked_people != set(advisors):
             raise ValueError(f'Unrecognized relationship markup in MGP record {identifier}; inspect the source instead of silently truncating ancestry.')
-        result = {'id': f'mgp-{identifier}', 'mgpId': int(identifier), 'name': name, 'year': year, 'institution': institution, 'advisors': advisors, 'sources': [{'label': 'Mathematics Genealogy Project', 'url': BASE + 'id.php?id=' + str(identifier)}]}
+        result = mgp_record(identifier, name, year=year, institution=institution, advisors=advisors)
         if relationship_notes:
             result['note'] = ' '.join(relationship_notes)
         if not advisors:
@@ -190,10 +200,8 @@ def main():
                 student_faculty.setdefault(student['id'], []).append(identifier)
                 student_names[student['id']] = student['name']
         for sid, name in student_names.items():
-            people.setdefault(sid, {'id': sid, 'mgpId': int(sid[4:]), 'name': name,
-                'year': None, 'institution': '', 'advisors': [], 'incomplete': True,
-                'sources': [{'label': 'Mathematics Genealogy Project', 'url': BASE + 'id.php?id=' + sid[4:]}],
-                'note': 'Listed in a selected faculty member’s student table; the student’s own advisor record has not yet been verified.'})
+            people.setdefault(sid, mgp_record(sid[4:], name, incomplete=True,
+                note='Listed in a selected faculty member’s student table; the student’s own advisor record has not yet been verified.'))
     queue = deque((identifier, 0) for identifier in dict.fromkeys(roots + list(student_faculty)))
     seen = set()
     fetched = 0
@@ -221,9 +229,9 @@ def main():
         existing = people.get(identifier)
         if identifier.startswith('mgp-') and fetched < args.max_people and depth <= args.max_depth:
             person, advisor_names = client.person(identifier[4:])
-            if identifier in student_faculty and not all(rid in person['advisors'] for rid in student_faculty[identifier]):
-                raise ValueError(f'Student {identifier} does not confirm the faculty advisor link from the student table; inspect both source records.')
             if identifier in student_faculty:
+                if not all(rid in person['advisors'] for rid in student_faculty[identifier]):
+                    raise ValueError(f'Student {identifier} does not confirm the faculty advisor link from the student table; inspect both source records.')
                 verified_students.add(identifier)
             if existing:
                 person.update({k: v for k, v in existing.items() if k in ['aliases', 'role']})
@@ -236,7 +244,8 @@ def main():
             fetched += 1
             print(f'{fetched}: {person["name"]} ({person["year"]})', file=sys.stderr, flush=True)
             for aid in person['advisors']:
-                people.setdefault(aid, {'id': aid, 'mgpId': int(aid[4:]), 'name': advisor_names[aid], 'year': None, 'institution': '', 'advisors': [], 'sources': [{'label': 'Mathematics Genealogy Project', 'url': BASE + 'id.php?id=' + aid[4:]}], 'incomplete': True, 'note': 'Ancestor record has not yet been fetched; the relationship is sourced on the student’s record.'})
+                people.setdefault(aid, mgp_record(aid[4:], advisor_names[aid], incomplete=True,
+                    note='Ancestor record has not yet been fetched; the relationship is sourced on the student’s record.'))
         elif not existing:
             raise ValueError(f'Missing root record {identifier}; increase --max-people or --max-depth.')
         elif identifier.startswith('mgp-'):

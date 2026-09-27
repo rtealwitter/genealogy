@@ -67,6 +67,7 @@ select {
   color: inherit;
 }
 button {
+  touch-action: manipulation;
   cursor: pointer;
   border: 0;
   background: transparent;
@@ -96,6 +97,12 @@ button svg {
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+#loading[hidden],
+#person-card[hidden],
+#lookup-cancel[hidden],
+#poster-preview[hidden] {
+  display: none;
 }
 header {
   position: absolute;
@@ -157,6 +164,7 @@ h1 {
   flex: none;
   border-radius: 100%;
   background: var(--branch);
+  opacity: 0.65;
 }
 .name-chip.selected {
   background: color-mix(in srgb, var(--branch) 12%, white);
@@ -203,18 +211,20 @@ h1 {
   fill: none;
   stroke: var(--branch, #b3a7bd);
   stroke-width: 1.5;
-  opacity: 0.48;
+  opacity: 0.32;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
   transition:
     opacity 0.25s,
     stroke-width 0.25s;
 }
 .edge.lit {
-  opacity: 0.85;
+  opacity: 0.6;
   stroke-width: 2;
 }
 .edge.dim {
-  opacity: 0.06;
+  opacity: 0.035;
 }
 .node {
   cursor: pointer;
@@ -261,6 +271,16 @@ h1 {
   stroke: #9e7c0a;
   stroke-width: 2;
 }
+.node.selected .hit {
+  fill: color-mix(in srgb, var(--branch) 7%, #fffdf9);
+  stroke: var(--branch);
+  stroke-width: 1;
+  filter: drop-shadow(0 3px 8px #28182006);
+}
+.node.selected .name,
+.node.selected .meta {
+  stroke: color-mix(in srgb, var(--branch) 7%, #fffdf9);
+}
 .node.selected .name {
   fill: var(--branch);
   font-weight: 600;
@@ -277,7 +297,7 @@ h1 {
   stroke-width: 3;
 }
 .node.dim {
-  opacity: 0.12;
+  opacity: 0.1;
 }
 .node.incomplete .anchor {
   stroke-dasharray: 2 2;
@@ -290,9 +310,6 @@ h1 {
   font: 22px var(--serif);
   color: var(--muted);
   pointer-events: none;
-}
-#loading[hidden] {
-  display: none;
 }
 .tools {
   position: fixed;
@@ -335,6 +352,7 @@ h1 {
   left: 28px;
   background: #ffffffed;
   border: 1px solid #ece7ec;
+  border-top: 2px solid var(--selected, #981a31);
   border-radius: 15px;
   box-shadow: 0 8px 40px #35213c07;
   backdrop-filter: blur(20px);
@@ -342,9 +360,6 @@ h1 {
   max-width: 320px;
   max-height: 36vh;
   overflow: auto;
-}
-#person-card[hidden] {
-  display: none;
 }
 #person-card h2 {
   font: 400 22px var(--serif);
@@ -509,10 +524,6 @@ input[type="range"] {
 input[type="checkbox"] {
   accent-color: #8c739a;
 }
-.depth-label {
-  display: flex;
-  justify-content: space-between;
-}
 #search-results button {
   display: block;
   width: 100%;
@@ -525,8 +536,51 @@ input[type="checkbox"] {
   max-height: 190px;
   overflow: auto;
 }
-#lookup-cancel[hidden] {
-  display: none;
+#poster-preview {
+  display: block;
+  width: 100%;
+  height: 140px;
+  object-fit: contain;
+  margin-top: 18px;
+  background: #f3eee7;
+  border-radius: 8px;
+}
+
+.generation-control {
+  position: fixed;
+  z-index: 3;
+  right: 24px;
+  bottom: 25px;
+  width: 190px;
+  padding: 12px 16px;
+  border: 1px solid #e9e5e8;
+  border-radius: 14px;
+  background: #fffffff2;
+  backdrop-filter: blur(15px);
+}
+.generation-control label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--ink);
+}
+.generation-control input {
+  display: block;
+  margin: 9px 0 0;
+  accent-color: #981a31;
+  cursor: pointer;
+}
+.print-options {
+  margin-top: 18px;
+}
+
+@media (max-width: 900px) {
+  .generation-control {
+    right: 14px;
+    bottom: 84px;
+    width: 154px;
+    padding: 10px 12px;
+  }
 }
 @media (max-width: 700px) {
   header {
@@ -572,10 +626,10 @@ input[type="checkbox"] {
   #person-card {
     left: 14px;
     right: 14px;
-    bottom: 84px;
+    bottom: 151px;
     max-width: none;
     padding: 15px 19px;
-    max-height: 25vh;
+    max-height: 24vh;
   }
   #person-card h2 {
     font-size: 21px;
@@ -583,8 +637,9 @@ input[type="checkbox"] {
   dialog {
     padding: 27px;
   }
-  .node .name {
-    font-size: 23px;
+  .generation-control input {
+    min-height: 24px;
+    margin-top: 4px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -592,71 +647,3 @@ input[type="checkbox"] {
     transition: none !important;
   }
 }
-
-.node.selected .hit {
-  fill: color-mix(in srgb, var(--branch) 7%, #fffdf9);
-  stroke: var(--branch);
-  stroke-width: 1;
-  filter: drop-shadow(0 3px 8px #28182006);
-}
-.node.selected .name,
-.node.selected .meta {
-  stroke: color-mix(in srgb, var(--branch) 7%, #fffdf9);
-}
-#person-card {
-  border-top: 2px solid var(--selected, #981a31);
-}
-.name-chip i {
-  opacity: 0.65;
-}
-.edge {
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.32;
-}
-.edge.lit {
-  opacity: 0.6;
-}
-
-.node.dim {
-  opacity: 0.1;
-}
-.edge.dim {
-  opacity: 0.035;
-}
-
-#poster-preview {
-  display: block;
-  width: 100%;
-  height: 140px;
-  object-fit: contain;
-  margin-top: 18px;
-  background: #f3eee7;
-  border-radius: 8px;
-}
-#poster-preview[hidden] { display: none; }
-
-.generation-control {
-  position: fixed;
-  z-index: 3;
-  right: 24px;
-  bottom: 25px;
-  width: 190px;
-  padding: 12px 16px;
-  border: 1px solid #e9e5e8;
-  border-radius: 14px;
-  background: #fffffff2;
-  backdrop-filter: blur(15px);
-}
-.generation-control label { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink); }
-.generation-control input { display: block; margin: 9px 0 0; accent-color: #981a31; cursor: pointer; }
-.print-options { margin-top: 18px; }
-@media (max-width: 900px) {
-  .generation-control { right: 14px; bottom: 84px; width: 154px; padding: 10px 12px; }
-}
-@media (max-width: 700px) {
-  #person-card { bottom: 151px; max-height: 24vh; }
-  .generation-control input { min-height: 24px; margin-top: 4px; }
-}
-
-button { touch-action: manipulation; }

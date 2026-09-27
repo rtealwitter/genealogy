@@ -24,12 +24,13 @@ function splitPath(points, cut) {
 }
 
 function fold(layout, cut, crossEdges) {
-  const markers = crossEdges.map(({ edge, index }) => ({ ...splitPath(edge.points, cut), edge, index }));
+  const markers = crossEdges.map(({ edge, index }) => ({ ...splitPath(edge.points, cut), index }));
   if (markers.some(marker => !marker.upper)) return null;
   spread(markers);
   const crossing = new Map(markers.map((marker, index) => [marker.index, { ...marker, label: String(index + 1) }]));
   const panels = [0, 1].map(panelIndex => {
     const nodes = layout.nodes.filter(node => Number(node.y > cut) === panelIndex);
+    const ids = new Set(nodes.map(node => node.id));
     const segments = [];
     layout.edges.forEach((edge, index) => {
       const marker = crossing.get(index);
@@ -44,7 +45,7 @@ function fold(layout, cut, crossEdges) {
           points.splice(points.length - 1, 0, { x: points.at(-2).x, y: (cut + points.at(-2).y) / 2 });
         }
         segments.push({ index, points });
-      } else if (nodes.some(node => node.id === edge.from)) segments.push({ index, points: edge.points });
+      } else if (ids.has(edge.from)) segments.push({ index, points: edge.points });
     });
     const points = segments.flatMap(segment => segment.points);
     const left = Math.min(...nodes.map(node => node.x - node.width / 2), ...points.map(point => point.x)) - PAD;
@@ -71,12 +72,13 @@ function fold(layout, cut, crossEdges) {
 }
 
 /** Returns a new export layout; screen geometry and graph membership stay intact. */
-export function preparePosterLayout(layout, { mode = 'vertical', size = 'arch-d' } = {}) {
+export function preparePosterLayout(layout, { mode = 'vertical' } = {}) {
   if (layout.posterLayout || mode !== 'landscape' || layout.nodes.length < 4 || !layout.edges.length) return layout;
-  const aspect = size === 'a1' ? (2383.937 - 144) / (1683.78 - 308) : (2592 - 144) / (1728 - 308);
+  const aspect = (2592 - 144) / (1728 - 308);
   const baseline = Math.min(aspect / layout.width, 1 / layout.height);
   const byId = new Map(layout.nodes.map(node => [node.id, node]));
   const rows = [...new Set(layout.nodes.map(node => node.y))].sort((a, b) => a - b);
+  const indexedEdges = layout.edges.map((edge, index) => ({ edge, index }));
   let best = null;
   for (let i = 0; i < rows.length - 1; i++) {
     const upper = layout.nodes.filter(node => node.y <= rows[i]);
@@ -85,7 +87,7 @@ export function preparePosterLayout(layout, { mode = 'vertical', size = 'arch-d'
     const top = Math.min(...lower.map(node => node.y - node.height / 2));
     if (top - bottom < 28) continue;
     const cut = (top + bottom) / 2;
-    const crossEdges = layout.edges.map((edge, index) => ({ edge, index })).filter(({ edge }) =>
+    const crossEdges = indexedEdges.filter(({ edge }) =>
       byId.get(edge.from).y < cut && byId.get(edge.to).y > cut);
     if (!crossEdges.length || crossEdges.length > 24) continue;
     const candidate = fold(layout, cut, crossEdges);

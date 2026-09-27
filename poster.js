@@ -1,12 +1,11 @@
 // Vector exports share one drawing routine. Fonts are local, including accented names.
 import { jsPDF } from "./vendor/jspdf.es.min.js";
-import { preparePosterLayout } from "./poster-layout.js";
+import { preparePosterLayout } from "./poster-layout.js?v=8";
 
 const C = {
   paper: "#fcfaf5",
   ink: "#34323e",
   muted: "#84818a",
-  line: "#c5bdce",
   plum: "#9e7c0a",
   border: "#ded9e2",
 };
@@ -39,44 +38,34 @@ function fontData() {
   return fontsPromise;
 }
 
-function pageSize(layout, size) {
+// Preview metrics and both vector formats use exactly the same page geometry.
+function posterGeometry(layout, size, mode) {
+  layout = preparePosterLayout(layout, { mode });
+  let width = 36 * 72, height = 24 * 72;
   if (size === "readable") {
     const scale = Math.min(
       11 / NAME_SIZE,
       (14400 - 144) / layout.width,
       (14400 - 308) / layout.height,
     );
-    return [
-      Math.max(720, layout.width * scale + 144),
-      Math.max(600, layout.height * scale + 308),
-    ];
+    width = Math.max(720, layout.width * scale + 144);
+    height = Math.max(600, layout.height * scale + 308);
   }
-  if (size === "a1") return [(841 * 72) / 25.4, (594 * 72) / 25.4];
-  if (size === "auto") {
-    // Fit the graph and fixed margins inside a 36-inch long edge.
-    const scale = Math.min(
-      (2592 - 144) / layout.width,
-      (2592 - 308) / layout.height,
-    );
-    return [
-      Math.max(720, layout.width * scale + 144),
-      Math.max(600, layout.height * scale + 308),
-    ];
-  }
-  return [36 * 72, 24 * 72];
+  const scale = Math.min((width - 144) / layout.width, (height - 308) / layout.height);
+  const offsetX = (width - layout.width * scale) / 2;
+  const offsetY = 217 + (height - 308 - layout.height * scale) / 2;
+  const mapPoint = point => ({ x: offsetX + point.x * scale, y: offsetY + point.y * scale });
+  return { layout, width, height, scale, mapPoint };
 }
 
 export function getPosterMetrics(layout, size, layoutMode = 'vertical') {
-  layout = preparePosterLayout(layout, { mode: layoutMode, size });
-  const [width, height] = pageSize(layout, size);
+  const page = posterGeometry(layout, size, layoutMode);
   return {
-    width: width / 72,
-    height: height / 72,
-    layoutMode: layout.posterLayout || 'vertical',
-    continuationCount: layout.continuationCount || 0,
-    nameSize:
-      NAME_SIZE *
-      Math.min((width - 144) / layout.width, (height - 308) / layout.height),
+    width: page.width / 72,
+    height: page.height / 72,
+    layoutMode: page.layout.posterLayout || 'vertical',
+    continuationCount: page.layout.continuationCount || 0,
+    nameSize: NAME_SIZE * page.scale,
   };
 }
 
@@ -101,8 +90,9 @@ async function drawPoster(layout, options = {}) {
   if (!layout.nodes?.length || !(layout.width > 0) || !(layout.height > 0)) {
     throw new Error("Choose at least one person before exporting a poster.");
   }
-  layout = preparePosterLayout(layout, { mode: options.layoutMode, size: options.size });
-  const [width, height] = pageSize(layout, options.size);
+  const page = posterGeometry(layout, options.size, options.layoutMode);
+  const { width, height, scale, mapPoint } = page;
+  layout = page.layout;
   const doc = new jsPDF({
     orientation: width >= height ? "landscape" : "portrait",
     unit: "pt",
@@ -130,25 +120,13 @@ async function drawPoster(layout, options = {}) {
     keywords: "mathematics, genealogy, advisors",
   });
   const svg = [];
-  function path(points, color, lineWidth) {
-    doc.setLineDashPattern([], 0);
-    if (points.length < 2) return;
-    doc.setDrawColor(color);
-    doc.setLineWidth(lineWidth);
-    doc.lines(
-      points.slice(1).map((p, i) => [p.x - points[i].x, p.y - points[i].y]),
-      points[0].x,
-      points[0].y,
-      [1, 1],
-      "S",
-      false,
-    );
-    svg.push(
-      `<polyline points="${points.map((p) => `${p.x},${p.y}`).join(" ")}" fill="none" stroke="${color}" stroke-width="${lineWidth}" stroke-linejoin="round"/>`,
-    );
+  function rule(y) {
+    doc.setDrawColor(C.border);
+    doc.setLineWidth(0.8);
+    doc.line(72, y, width - 72, y);
+    svg.push(`<line x1="72" y1="${y}" x2="${width - 72}" y2="${y}" stroke="${C.border}" stroke-width="0.8"/>`);
   }
   function circle(x, y, radius, color, hollow = false) {
-    doc.setLineDashPattern([], 0);
     doc.setFillColor(hollow ? C.paper : color);
     doc.setDrawColor(color);
     doc.setLineWidth(Math.max(0.4, radius * 0.35));
@@ -159,29 +137,19 @@ async function drawPoster(layout, options = {}) {
   }
   function curve(points, color, lineWidth) {
     if (points.length < 2) return;
-    doc.setLineDashPattern([], 0);
     doc.setDrawColor(color);
     doc.setLineWidth(lineWidth);
-    const first = points[0];
-    const segments = [];
-    const commands = [`M${first.x},${first.y}`];
+    const commands = [{ op: 'm', c: [points[0].x, points[0].y] }];
     for (let i = 1; i < points.length; i++) {
       const from = points[i - 1],
         to = points[i];
       const middleY = (from.y + to.y) / 2;
-      segments.push([
-        0,
-        middleY - from.y,
-        to.x - from.x,
-        middleY - from.y,
-        to.x - from.x,
-        to.y - from.y,
-      ]);
-      commands.push(`C${from.x},${middleY} ${to.x},${middleY} ${to.x},${to.y}`);
+      commands.push({ op: 'c', c: [from.x, middleY, to.x, middleY, to.x, to.y] });
     }
-    doc.lines(segments, first.x, first.y, [1, 1], "S", false);
+    doc.path(commands).stroke();
+    const d = commands.map(command => command.op.toUpperCase() + command.c.join(' ')).join(' ');
     svg.push(
-      `<path d="${commands.join(" ")}" fill="none" stroke="${color}" stroke-width="${lineWidth}" stroke-linecap="round"/>`,
+      `<path d="${d}" fill="none" stroke="${color}" stroke-width="${lineWidth}" stroke-linecap="round"/>`,
     );
   }
   function text(
@@ -250,28 +218,7 @@ async function drawPoster(layout, options = {}) {
       "right",
     );
   }
-  path(
-    [
-      { x: margin, y: 192 },
-      { x: width - margin, y: 192 },
-    ],
-    C.border,
-    0.8,
-  );
-
-  const chartTop = 217,
-    chartBottom = height - 91;
-  const scale = Math.min(
-    (width - margin * 2) / layout.width,
-    (chartBottom - chartTop) / layout.height,
-  );
-  const offsetX = (width - layout.width * scale) / 2;
-  const offsetY =
-    chartTop + (chartBottom - chartTop - layout.height * scale) / 2;
-  const mapPoint = (p) => ({
-    x: offsetX + p.x * scale,
-    y: offsetY + p.y * scale,
-  });
+  rule(192);
   const color = (value) =>
     /^#[0-9a-f]{6}$/i.test(value || "") ? value : C.plum;
   const soften = (value, opacity = 0.38) => {
@@ -364,14 +311,7 @@ async function drawPoster(layout, options = {}) {
     svg.push('</g>');
   }
 
-  path(
-    [
-      { x: margin, y: height - 66 },
-      { x: width - margin, y: height - 66 },
-    ],
-    C.border,
-    0.8,
-  );
+  rule(height - 66);
   const footer =
     "Sources: Mathematics Genealogy Project · mathgenealogy.org";
   text(
@@ -392,14 +332,16 @@ async function drawPoster(layout, options = {}) {
     "right",
   );
 
-  const fontStyles = fonts
-    .map(
-      (font, i) =>
-        `@font-face{font-family:${i < 2 ? 'Genealogy' : 'GenealogyFallback'};src:url(data:font/ttf;base64,${font}) format('truetype');font-weight:${i % 2 ? 700 : 400}}`,
-    )
-    .join("");
-  const svgDocument = `<svg xmlns="http://www.w3.org/2000/svg" width="${width / 72}in" height="${height / 72}in" viewBox="0 0 ${width} ${height}"><title>${escapeXml(title)}</title><style>${fontStyles}text{font-family:Genealogy,sans-serif}</style>${svg.join("")}</svg>`;
-  return { doc, svg: svgDocument };
+  return {
+    doc,
+    // PDF downloads do not need the large base64-font SVG document.
+    get svg() {
+      const fontStyles = fonts.map((font, i) =>
+        `@font-face{font-family:${i < 2 ? 'Genealogy' : 'GenealogyFallback'};src:url(data:font/ttf;base64,${font}) format('truetype');font-weight:${i % 2 ? 700 : 400}}`
+      ).join('');
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${width / 72}in" height="${height / 72}in" viewBox="0 0 ${width} ${height}"><title>${escapeXml(title)}</title><style>${fontStyles}text{font-family:Genealogy,sans-serif}</style>${svg.join("")}</svg>`;
+    },
+  };
 }
 
 /** Returns jsPDF for callers needing bytes or a preview instead of a download. */
@@ -423,7 +365,7 @@ export async function exportPoster(layout, options = {}) {
 
 /** Downloads a standalone, editable SVG with the same composition and embedded fonts. */
 export async function exportSvg(layout, options = {}) {
-  const { svg } = await drawPoster(layout, options);
+  const svg = await createPosterSvg(layout, options);
   const url = URL.createObjectURL(
     new Blob([svg], { type: "image/svg+xml;charset=utf-8" }),
   );

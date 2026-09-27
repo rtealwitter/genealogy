@@ -20,7 +20,6 @@ let original,
   people,
   roots,
   layout,
-  visible,
   selected = null,
   isCMC = true,
   lookupController = null;
@@ -78,38 +77,53 @@ function setData(data) {
   roots = [...data.defaultRoots];
   $("names").value = roots.map((id) => people.get(id).name).join("\n");
 }
-function color(id) {
-  return (visible.membership.get(id)?.size || 0) > 1 ? CMC_GOLD : CMC_MAROON;
+function highlight(graph) {
+  const ancestors = selected ? ancestry(selected, people) : new Set();
+  const students = selected ? descendants(selected, people) : new Set();
+  for (const node of graph.nodes) {
+    node.selected = node.id === selected;
+    node.dim = Boolean(selected) && !ancestors.has(node.id) && !students.has(node.id);
+    node.color = node.selected && selected === "mgp-339304"
+      ? SELECTED_TEAL : node.shared ? CMC_GOLD : CMC_MAROON;
+  }
+  for (const edge of graph.edges) {
+    edge.dim = Boolean(selected) && !(
+      (ancestors.has(edge.from) && ancestors.has(edge.to)) ||
+      (students.has(edge.from) && students.has(edge.to))
+    );
+  }
+  return graph;
 }
-function draw() {
-  selected = null;
-  $("person-card").hidden = true;
-  visible = subgraph(people, roots, {
-    depth: $("depth").value === "25" ? Infinity : Number($("depth").value),
+function makeLayout(depth, aspectRatio) {
+  const graph = subgraph(people, roots, {
+    depth,
     sharedOnly: $("shared-only").checked,
     includeStudents: $("include-students").checked,
   });
-  const rendered = visible;
-  for (const n of rendered.nodes) {
-    const lines = wrap(n.person.name);
-    n.width = Math.max(
-      140,
-      Math.min(
-        250,
-        Math.max(
-          ...lines.map((line) => measuringContext.measureText(line).width),
-        ) + 28,
-      ),
-    );
-    n.height = Math.max(56, wrap(n.person.name).length * 23 + 29);
-    n.color = color(n.id);
+  for (const node of graph.nodes) {
+    node.lines = wrap(node.person.name);
+    const textWidth = Math.max(...node.lines.map(line => measuringContext.measureText(line).width));
+    node.width = Math.max(140, Math.min(250, textWidth + 28));
+    node.height = Math.max(56, node.lines.length * 23 + 29);
+    node.color = node.shared ? CMC_GOLD : CMC_MAROON;
   }
+  return highlight(buildLayout(graph, roots, aspectRatio));
+}
+function draw({ preserveView = false } = {}) {
+  cancelAnimationFrame(animation);
+  const previous = preserveView && layout ? { layout, camera: { ...camera } } : null;
+  if (!previous) selected = null;
+  $("person-card").hidden = true;
   positionGraph();
-  layout = buildLayout(rendered, roots, $("graph").clientWidth / Math.max(1, $("graph").clientHeight - 80));
-  const edges = layout.edges;
+  const aspectRatio = $("graph").clientWidth / Math.max(1, $("graph").clientHeight - 80);
+  layout = makeLayout($("depth").value === "25" ? Infinity : Number($("depth").value), aspectRatio);
+  if (selected && !layout.nodes.some(node => node.id === selected)) {
+    selected = null;
+    highlight(layout);
+  }
   $("viewport").replaceChildren();
   const paths = svg("g", { "aria-hidden": "true" });
-  for (const edge of edges)
+  for (const edge of layout.edges)
     paths.append(
       svg("path", {
         d: curve(edge.points),
@@ -149,34 +163,11 @@ function draw() {
         r: n.root ? 5 : 3.5,
       }),
     );
-    const lines = wrap(n.person.name);
-    lines.forEach((line, i) =>
-      group.append(
-        svg(
-          "text",
-          {
-            class: "name",
-            x: n.width / 2,
-            y: 25 + i * 23,
-            "text-anchor": "middle",
-          },
-          line,
-        ),
-      ),
-    );
-    if (n.person.year)
-      group.append(
-        svg(
-          "text",
-          {
-            class: "meta",
-            x: n.width / 2,
-            y: lines.length * 23 + 18,
-            "text-anchor": "middle",
-          },
-          n.person.year,
-        ),
-      );
+    const label = (text, y, className) => svg("text", {
+      class: className, x: n.width / 2, y, "text-anchor": "middle",
+    }, text);
+    group.append(...n.lines.map((line, i) => label(line, 25 + i * 23, "name")));
+    if (n.person.year) group.append(label(n.person.year, n.lines.length * 23 + 18, "meta"));
     group.append(
       svg(
         "title",
@@ -193,7 +184,7 @@ function draw() {
     $("viewport").append(group);
   }
   $("name-chips").replaceChildren();
-  for (const [i, id] of roots.entries()) {
+  for (const id of roots) {
     const chip = html("button", null, "name-chip");
     chip.dataset.id = id;
     chip.style.setProperty("--branch", CMC_MAROON);
@@ -224,7 +215,30 @@ function draw() {
   if (missing)
     $("data-notes").textContent += ` · ${missing} records awaiting retrieval`;
   positionGraph();
-  home(false);
+  if (previous) restoreView(previous);
+  else home(false);
+  if (selected) select(selected);
+}
+function restoreView(previous) {
+  const { camera: old, layout: before } = previous;
+  const w = $("graph").clientWidth, h = $("graph").clientHeight;
+  const current = new Map(layout.nodes.map(node => [node.id, node]));
+  const screen = node => ({ x: old.x + node.x * old.k, y: old.y + node.y * old.k });
+  const onScreen = point => point.x >= 0 && point.x <= w && point.y >= 0 && point.y <= h;
+  const distance = node => {
+    const point = screen(node);
+    return Math.hypot(point.x - w / 2, point.y - h / 2);
+  };
+  const candidates = before.nodes.filter(node => current.has(node.id));
+  const anchor = candidates.find(node => node.id === selected && onScreen(screen(node))) ||
+    candidates.sort((a, b) => distance(a) - distance(b))[0];
+  if (!anchor) return;
+  const position = screen(anchor), target = current.get(anchor.id);
+  // If the viewed generations were removed, bring the nearest survivor into
+  // view while retaining the user's zoom instead of resetting to the group.
+  const point = onScreen(position) ? position : { x: w / 2, y: h / 2 };
+  viewMode = "custom";
+  move({ k: old.k, x: point.x - target.x * old.k, y: point.y - target.y * old.k }, false);
 }
 function curve(points) {
   if (points.length < 2) return "";
@@ -325,85 +339,38 @@ function zoom(
   };
   transform();
 }
-function clearSelection() {
-  selected = null;
-  $("person-card").hidden = true;
-  for (const node of layout?.nodes || []) {
-    node.color = color(node.id);
-    node.dim = false;
-    node.selected = false;
-  }
-  for (const edge of layout?.edges || []) edge.dim = false;
-  document.querySelectorAll(".node,.edge,.name-chip").forEach((e) => {
-    e.classList.remove("dim", "lit", "selected", "muted");
-    if (e.hasAttribute("aria-pressed")) e.setAttribute("aria-pressed", "false");
-    if (e.classList.contains("name-chip"))
-      e.style.setProperty("--branch", CMC_MAROON);
-    else if (e.classList.contains("node"))
-      e.style.setProperty("--branch", color(e.dataset.id));
-  });
-}
-function toggle(id, focus = false) {
-  if (selected === id) {
-    clearSelection();
-    return;
-  }
-  select(id, focus);
-}
+function clearSelection() { select(null); }
+function toggle(id, focus = false) { select(selected === id ? null : id, focus); }
 function select(id, focus = false) {
+  if (!layout) return;
   selected = id;
-  if (focus && innerWidth <= 700) {
-    const node = layout.nodes.find(node => node.id === id);
+  highlight(layout);
+  const byId = new Map(layout.nodes.map(node => [node.id, node]));
+  if (id && focus && innerWidth <= 700) {
+    const node = byId.get(id);
     if (node) {
       const k = Math.max(camera.k, 0.8), h = $("graph").clientHeight;
       move({ k, x: $("graph").clientWidth / 2 - node.x * k,
         y: Math.max(60, Math.min(h * 0.3, h - 260)) - node.y * k });
     }
   }
-  const person = people.get(id),
-    ancestors = ancestry(id, people),
-    successors = descendants(id, people),
-    related = new Set([...ancestors, ...successors]);
-  for (const node of layout.nodes) {
-    node.selected = node.id === id;
-    node.dim = !related.has(node.id);
-    node.color =
-      node.id === id && id === "mgp-339304" ? SELECTED_TEAL : color(node.id);
-  }
-  for (const edge of layout.edges)
-    edge.dim = !(
-      (ancestors.has(edge.from) && ancestors.has(edge.to)) ||
-      (successors.has(edge.from) && successors.has(edge.to))
-    );
-  document.querySelectorAll(".node").forEach((e) => {
-    e.classList.toggle("dim", !related.has(e.dataset.id));
-    e.style.setProperty(
-      "--branch",
-      e.dataset.id === id && id === "mgp-339304"
-        ? SELECTED_TEAL
-        : color(e.dataset.id),
-    );
-    e.classList.toggle("selected", e.dataset.id === id);
-    e.setAttribute("aria-pressed", String(e.dataset.id === id));
+  document.querySelectorAll(".node,.name-chip").forEach(element => {
+    const node = byId.get(element.dataset.id);
+    const chip = element.classList.contains("name-chip");
+    element.classList.toggle(chip ? "muted" : "dim", node.dim);
+    element.classList.toggle("selected", node.selected);
+    element.setAttribute("aria-pressed", String(node.selected));
+    const color = chip && !(node.selected && id === "mgp-339304") ? CMC_MAROON : node.color;
+    element.style.setProperty("--branch", color);
   });
-  document.querySelectorAll(".edge").forEach((e) => {
-    const lit =
-      (ancestors.has(e.dataset.from) && ancestors.has(e.dataset.to)) ||
-      (successors.has(e.dataset.from) && successors.has(e.dataset.to));
-    e.classList.toggle("lit", lit);
-    e.classList.toggle("dim", !lit);
-  });
-  document.querySelectorAll(".name-chip").forEach((e) => {
-    e.classList.toggle("selected", e.dataset.id === id);
-    e.classList.toggle("muted", !related.has(e.dataset.id));
-    e.style.setProperty(
-      "--branch",
-      e.dataset.id === id && id === "mgp-339304" ? SELECTED_TEAL : CMC_MAROON,
-    );
-    e.setAttribute("aria-pressed", String(e.dataset.id === id));
+  document.querySelectorAll(".edge").forEach((element, i) => {
+    element.classList.toggle("dim", layout.edges[i].dim);
+    element.classList.toggle("lit", Boolean(id) && !layout.edges[i].dim);
   });
   const card = $("person-card");
-  card.hidden = false;
+  card.hidden = !id;
+  if (!id) return;
+  const person = people.get(id);
   card.style.setProperty(
     "--selected",
     id === "mgp-339304" ? SELECTED_TEAL : CMC_MAROON,
@@ -529,7 +496,7 @@ $("zoom-in").onclick = () => zoom(1.25);
 $("zoom-out").onclick = () => zoom(0.8);
 $("fit").onclick = fit;
 $("home").onclick = () => {
-  clearSelection(false);
+  clearSelection();
   home();
 };
 function resizeView() {
@@ -543,16 +510,24 @@ $("edit-open").onclick = () => {
   $("names").value = roots.map((id) => people.get(id).name).join("\n");
   $("edit-dialog").showModal();
 };
-$("reset").onclick = () => {
-  setData(original);
-  isCMC = true;
-  $("shared-only").checked = false;
-  $("include-students").checked = true;
-  $("depth").value = "25";
-  $("depth-value").textContent = "All";
-  $("depth").setAttribute("aria-valuetext", "All generations");
+function updateDepth(value = $("depth").value) {
+  $("depth").value = value;
+  $("depth-value").textContent = value === "25" ? "All" : value;
+  $("depth").setAttribute("aria-valuetext", value === "25" ? "All generations" : `${value} generations`);
+}
+function showGroup(data, resetFilters = false) {
+  setData(data);
+  isCMC = data === original;
+  if (resetFilters) {
+    $("shared-only").checked = false;
+    updateDepth("25");
+  }
   draw();
   $("edit-dialog").close();
+}
+$("reset").onclick = () => {
+  $("include-students").checked = true;
+  showGroup(original, true);
 };
 function chooseCandidate(name, candidates, signal) {
   return new Promise((resolve, reject) => {
@@ -582,14 +557,8 @@ $("build").onclick = async () => {
   $("name-errors").textContent = "";
   const names = $("names").value,
     result = matchNames(names, dataset.people);
-  if (
-    !result.errors.length &&
-    result.roots.length
-  ) {
-    roots = result.roots;
-    isCMC = false;
-    draw();
-    $("edit-dialog").close();
+  if (!result.errors.length && result.roots.length) {
+    showGroup({ ...dataset, defaultRoots: result.roots });
     return;
   }
   if (!API_URL) {
@@ -609,10 +578,7 @@ $("build").onclick = async () => {
       onStatus: (message) => ($("lookup-status").textContent = message),
       chooseCandidate,
     });
-    setData(data);
-    isCMC = false;
-    draw();
-    $("edit-dialog").close();
+    showGroup(data);
     $("lookup-status").textContent = "";
   } catch (error) {
     $("name-errors").textContent =
@@ -633,14 +599,7 @@ $("import").onchange = async () => {
     const file = $("import").files[0];
     if (!file) return;
     if (file.size > 5000000) throw Error("Choose a file smaller than 5 MB.");
-    setData(JSON.parse(await file.text()));
-    isCMC = false;
-    $("shared-only").checked = false;
-    $("depth").value = "25";
-    $("depth-value").textContent = "All";
-  $("depth").setAttribute("aria-valuetext", "All generations");
-    draw();
-    $("edit-dialog").close();
+    showGroup(JSON.parse(await file.text()), true);
   } catch (e) {
     $("name-errors").textContent = "Import failed: " + e.message;
   } finally {
@@ -650,11 +609,9 @@ $("import").onchange = async () => {
 $("options-open").onclick = () => $("options-dialog").showModal();
 let depthTimer;
 $("depth").oninput = () => {
-  const all = $("depth").value === "25";
-  $("depth-value").textContent = all ? "All" : $("depth").value;
-  $("depth").setAttribute("aria-valuetext", all ? "All generations" : `${$("depth").value} generations`);
+  updateDepth();
   clearTimeout(depthTimer);
-  depthTimer = setTimeout(draw, 100);
+  depthTimer = setTimeout(() => draw({ preserveView: true }), 100);
 };
 $("shared-only").onchange = () => draw();
 $("include-students").onchange = () => draw();
@@ -682,36 +639,37 @@ function printLayout() {
   const depth = $("poster-depth").value === "all" ? Infinity : Number($("poster-depth").value);
   const key = JSON.stringify([roots, depth, $("include-students").checked, $("shared-only").checked, selected]);
   if (printCache?.source === dataset && printCache.key === key) return printCache.layout;
-  const graph = subgraph(people, roots, { depth, includeStudents: $("include-students").checked, sharedOnly: $("shared-only").checked });
-  const ancestors = selected ? ancestry(selected, people) : null;
-  const successors = selected ? descendants(selected, people) : null;
-  for (const n of graph.nodes) {
-    const lines = wrap(n.person.name);
-    n.width = Math.max(140, Math.min(250, Math.max(...lines.map(line => measuringContext.measureText(line).width)) + 28));
-    n.height = Math.max(56, lines.length * 23 + 29);
-    n.selected = n.id === selected;
-    n.color = n.id === selected && selected === "mgp-339304" ? SELECTED_TEAL : n.shared ? CMC_GOLD : CMC_MAROON;
-    n.dim = selected ? !(ancestors.has(n.id) || successors.has(n.id)) : false;
-  }
-  for (const e of graph.edges) e.dim = selected ? !((ancestors.has(e.from) && ancestors.has(e.to)) || (successors.has(e.from) && successors.has(e.to))) : false;
-  const output = buildLayout(graph, roots, 1.5);
+  const output = makeLayout(depth, 1.5);
+  const colors = new Map(output.nodes.map(node => [node.id, node.color]));
+  for (const edge of output.edges) edge.color = colors.get(edge.to);
   printCache = { source: dataset, key, layout: output };
   return output;
+}
+function posterOptions() {
+  const options = {
+    title: $("poster-title").value || "PhD Genealogy Tree",
+    subtitle: selected
+      ? people.get(selected).name + " · Ancestors and descendants highlighted"
+      : isCMC
+        ? "Claremont McKenna College · Mathematical Sciences"
+        : roots.map((id) => people.get(id).name).join(" · "),
+    size: $("poster-size").value,
+    layoutMode: "landscape",
+  };
+  options.subtitle += ` · ${$("poster-depth").value === "all" ? "All recorded generations" : $("poster-depth").value + " generations of ancestry"}`;
+  return options;
 }
 let previewRevision = 0, previewUrl;
 async function updatePosterPreview() {
   const revision = ++previewRevision;
   try {
-    const { getPosterMetrics, createPosterSvg } = await import("./poster.js?v=7");
+    const { getPosterMetrics, createPosterSvg } = await import("./poster.js?v=8");
     const tree = printLayout();
     const m = getPosterMetrics(tree, $("poster-size").value, "landscape");
     $("poster-dimensions").textContent =
       `${$("poster-depth").value === "all" ? "All" : $("poster-depth").value} generations · ${m.width.toFixed(1)} × ${m.height.toFixed(1)} inches · ${m.nameSize.toFixed(1)} pt names${m.nameSize < 8 ? ". Choose Size to fit for larger text." : ""}`;
     $("poster-layout-note").hidden = m.layoutMode !== "landscape";
-    const preview = await createPosterSvg(tree, {
-      title: $("poster-title").value || "PhD Genealogy Tree",
-      size: $("poster-size").value, layoutMode: "landscape",
-    });
+    const preview = await createPosterSvg(tree, posterOptions());
     if (revision !== previewRevision || !$("poster-dialog").open) return;
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     previewUrl = URL.createObjectURL(new Blob([preview], { type: "image/svg+xml" }));
@@ -732,22 +690,10 @@ async function download(kind) {
   button.disabled = true;
   $("export-status").textContent = "Preparing…";
   try {
-    const exporter = await import("./poster.js?v=7");
-    const options = {
-      title: $("poster-title").value || "PhD Genealogy Tree",
-      subtitle: selected
-        ? people.get(selected).name + " · Ancestors and descendants highlighted"
-        : isCMC
-          ? "Claremont McKenna College · Mathematical Sciences"
-          : roots.map((id) => people.get(id).name).join(" · "),
-      size: $("poster-size").value,
-      layoutMode: "landscape",
-      sourceDate: dataset.updated,
-    };
-    options.subtitle += ` · ${$("poster-depth").value === "all" ? "All recorded generations" : $("poster-depth").value + " generations of ancestry"}`;
+    const exporter = await import("./poster.js?v=8");
     await (kind === "pdf" ? exporter.exportPoster : exporter.exportSvg)(
       printLayout(),
-      options,
+      posterOptions(),
     );
     $("export-status").textContent = "Ready.";
   } catch (e) {
