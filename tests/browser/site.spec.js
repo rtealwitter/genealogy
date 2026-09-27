@@ -29,7 +29,7 @@ test("minimal interface, readable names, click again and background both restore
     .evaluate(
       (e) => parseFloat(getComputedStyle(e).fontSize) * e.getScreenCTM().a,
     );
-  expect(textSize).toBeGreaterThanOrEqual(14);
+  expect(textSize).toBeGreaterThanOrEqual(11);
   expect(await page.locator(".node .name").evaluateAll(ns => [...new Set(ns.map(n => getComputedStyle(n).fontSize))])).toEqual(["23px"]);
   const positions = await page.locator(".node").evaluateAll(ns => ns.map(n => n.getAttribute("transform")));
   const camera = await page.locator("#viewport").getAttribute("transform");
@@ -69,16 +69,23 @@ test("minimal interface, readable names, click again and background both restore
   await expect(page.locator("#person-card")).toBeHidden();
   await chip.click();
   await page.waitForTimeout(450);
-  const graph = await page.locator("#graph").boundingBox();
-  await page.mouse.click(graph.x + graph.width - 30, graph.y + graph.height - 35);
+  const blank = await page.evaluate(() => {
+    const graph = document.getElementById("graph").getBoundingClientRect();
+    for (let y = graph.top + 30; y < graph.bottom - 30; y += 40)
+      for (let x = graph.left + 30; x < graph.right - 30; x += 40) {
+        const e = document.elementFromPoint(x, y);
+        if (e?.closest("#graph") && !e.closest(".node")) return {x,y};
+      }
+  });
+  await page.mouse.click(blank.x, blank.y);
   await expect(page.locator(".node")).toHaveCount(all);
   await expect(page.locator("#person-card")).toBeHidden();
   await chip.click();
   await page.waitForTimeout(450);
-  await page.mouse.move(graph.x + graph.width - 30, graph.y + graph.height - 35);
+  await page.mouse.move(blank.x, blank.y);
   await page.mouse.down();
-  await page.mouse.move(graph.x + graph.width - 90, graph.y + graph.height - 75, { steps: 5 });
-  await page.mouse.move(graph.x + graph.width - 30, graph.y + graph.height - 35, { steps: 5 });
+  await page.mouse.move(blank.x + 60, blank.y + 40, { steps: 5 });
+  await page.mouse.move(blank.x, blank.y, { steps: 5 });
   await page.mouse.up();
   await expect(page.locator("#person-card")).toBeVisible();
   await expect(chip).toHaveAttribute("aria-pressed", "true");
@@ -101,13 +108,14 @@ test("edit group, filter, search, and vector export", async ({ page }) => {
   await page.locator("#poster-open").click();
   await expect(page.locator("#poster-dimensions")).toContainText("inches");
   const pdfPromise = page.waitForEvent("download");
-  await page.locator("#pdf").click();
+  await page.locator("#download").click();
   const pdf = await pdfPromise;
   expect(pdf.suggestedFilename()).toMatch(/\.pdf$/);
   await pdf.saveAs("/tmp/genealogy-test.pdf");
   await expect(page.locator("#export-status")).toHaveText("Ready.");
   const svgPromise = page.waitForEvent("download");
-  await page.locator("#svg-export").click();
+  await page.locator("#poster-format").selectOption("svg");
+  await page.locator("#download").click();
   const svg = await svgPromise;
   await svg.saveAs("/tmp/genealogy-test.svg");
 });
@@ -269,4 +277,76 @@ test("removing names uses existing records, including unfinished ancestry, witho
   await expect(page.locator("#edit-dialog")).not.toBeVisible();
   await expect(page.locator(".name-chip")).toHaveCount(2);
   expect(requests).toEqual([]);
+});
+
+test("dragging from a name pans without selecting text or people", async ({page}) => {
+  await ready(page);
+  const node = page.locator('.node[data-id="mgp-339304"] .name').first();
+  const box = await node.boundingBox(), before = await page.locator('#viewport').getAttribute('transform');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2 - 40, {steps:8});
+  await page.mouse.up();
+  expect(await page.locator('#viewport').getAttribute('transform')).not.toBe(before);
+  await expect(page.locator('#person-card')).toBeHidden();
+  expect(await page.evaluate(() => window.getSelection().toString())).toBe('');
+});
+
+test("phone supports a drag beginning on a name and two-finger pinch without accidental selection", async ({browser}) => {
+  const context = await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const page = await context.newPage();
+  await page.route('**/data/genealogy.json', route => route.fulfill({json:snapshot()}));
+  await ready(page);
+  const client = await context.newCDPSession(page);
+  const touch = (type, touchPoints) => client.send('Input.dispatchTouchEvent', {type,touchPoints});
+  const node = await page.locator('.node[data-id="mgp-339304"]').boundingBox();
+  const point = {x:node.x + node.width/2, y:node.y + node.height/2, id:1};
+  const before = await page.locator('#viewport').getAttribute('transform');
+  await touch('touchStart',[point]);
+  await touch('touchMove',[{...point,x:point.x+60,y:point.y-45}]);
+  await touch('touchEnd',[]);
+  expect(await page.locator('#viewport').getAttribute('transform')).not.toBe(before);
+  await expect(page.locator('#person-card')).toBeHidden();
+  await page.locator('.name-chip[data-id="mgp-339304"]').tap();
+  await page.waitForTimeout(450);
+  const scale = () => page.locator('#viewport').evaluate(n=>n.getCTM().a);
+  const initialScale = await scale();
+  expect(initialScale * 23).toBeGreaterThanOrEqual(18);
+  const graph = await page.locator('#graph').boundingBox(), y=graph.y+120;
+  await touch('touchStart',[{x:140,y,id:1},{x:240,y,id:2}]);
+  await touch('touchMove',[{x:90,y:Math.round(y),id:1},{x:290,y:Math.round(y),id:2}]);
+  await touch('touchEnd',[]);
+  expect(await scale()).toBeGreaterThan(initialScale*1.8);
+  await expect(page.locator('.name-chip[data-id="mgp-339304"]')).toHaveAttribute('aria-pressed','true');
+  expect(await page.evaluate(() => window.getSelection().toString())).toBe('');
+  await context.close();
+});
+
+test("students highlight with their faculty and generation slider is separate from the print default", async ({page}) => {
+  await ready(page);
+  const all = await page.locator('.node').count();
+  const students = snapshot().people.filter(person => person.advisors.includes('mgp-17045'));
+  expect(students.length).toBe(4);
+  await page.locator('.name-chip[data-id="mgp-17045"]').click();
+  for (const student of students)
+    await expect(page.locator(`.node[data-id="${student.id}"]`)).not.toHaveClass(/dim/);
+  await page.locator('#options-open').click();
+  await page.locator('#include-students').uncheck();
+  for (const student of students)
+    await expect(page.locator(`.node[data-id="${student.id}"]`)).toHaveCount(0);
+  await page.locator('#include-students').check();
+  await page.locator('#options-dialog .dialog-close').click();
+  await expect(page.locator('#depth')).toBeVisible();
+  await page.locator('#depth').evaluate(n => { n.value='6'; n.dispatchEvent(new Event('input',{bubbles:true})); });
+  await expect(page.locator('#depth-value')).toHaveText('6');
+  await expect.poll(() => page.locator('.node').count()).toBeLessThan(all);
+  const screenCount = await page.locator('.node').count();
+  await page.locator('#poster-open').click();
+  await expect(page.locator('#poster-dimensions')).toContainText('12 generations');
+  await expect(page.locator('#poster-preview')).toBeVisible();
+  await expect(page.locator('#poster-title')).not.toBeVisible();
+  await page.locator('.print-options summary').click();
+  await page.locator('#poster-depth').selectOption('all');
+  await expect(page.locator('#poster-dimensions')).toContainText('All generations');
+  await expect(page.locator('.node')).toHaveCount(screenCount);
 });

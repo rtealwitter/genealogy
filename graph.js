@@ -46,6 +46,8 @@ export function validateDataset(data) {
       if (!ids.has(id)) throw Error(`Missing advisor ${id} for ${p.name}.`);
   if (!data.defaultRoots.length || data.defaultRoots.some((id) => !ids.has(id)))
     throw Error("The starting group must refer to people in the dataset.");
+  if (data.defaultStudents != null && (!Array.isArray(data.defaultStudents) || data.defaultStudents.some(id => !ids.has(id))))
+    throw Error("Student IDs must refer to people in the dataset.");
   const byId = new Map(data.people.map((p) => [p.id, p]));
   const visiting = new Set(),
     done = new Set();
@@ -108,7 +110,7 @@ export function ancestry(id, people, maxDepth = Infinity) {
 export function subgraph(
   people,
   roots,
-  { depth = Infinity, sharedOnly = false } = {},
+  { depth = Infinity, sharedOnly = false, includeStudents = false } = {},
 ) {
   const membership = new Map();
   for (const root of roots)
@@ -131,11 +133,25 @@ export function subgraph(
       )
       .map(([id]) => id),
   );
+  const students = new Set();
+  if (includeStudents) {
+    for (const person of people.values()) {
+      const advisors = person.advisors.filter(id => roots.includes(id));
+      if (!advisors.length || roots.includes(person.id)) continue;
+      students.add(person.id);
+      visible.add(person.id);
+      // Students can have co-advisors outside the selected faculty. Preserve
+      // those branches without counting them as the faculty's own ancestry.
+      if (!sharedOnly)
+        for (const id of ancestry(person.id, people, depth + 1)) visible.add(id);
+    }
+  }
   const nodes = [...visible].map((id) => ({
     id,
     person: people.get(id),
     root: roots.includes(id),
-    shared: membership.get(id).size > 1,
+    shared: (membership.get(id)?.size || 0) > 1,
+    student: students.has(id),
   }));
   const edges = nodes.flatMap((n) =>
     n.person.advisors

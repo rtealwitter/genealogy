@@ -26,8 +26,7 @@ let original,
   lookupController = null;
 let camera = { x: 0, y: 0, k: 1 },
   viewMode = "group",
-  drag = null,
-  ignoreClick = false,
+  gesture = null,
   animation;
 const svg = (tag, attrs = {}, text) => {
   const e = document.createElementNS(NS, tag);
@@ -88,6 +87,7 @@ function draw() {
   visible = subgraph(people, roots, {
     depth: $("depth").value === "25" ? Infinity : Number($("depth").value),
     sharedOnly: $("shared-only").checked,
+    includeStudents: $("include-students").checked,
   });
   const rendered = visible;
   for (const n of rendered.nodes) {
@@ -184,7 +184,6 @@ function draw() {
         `${n.person.name}\n${n.person.institution || ""}${n.person.year ? " · " + n.person.year : ""}`,
       ),
     );
-    group.onclick = () => toggle(n.id);
     group.onkeydown = (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
@@ -200,7 +199,23 @@ function draw() {
     chip.style.setProperty("--branch", CMC_MAROON);
     chip.append(html("i"), html("span", people.get(id).name));
     chip.setAttribute("aria-pressed", "false");
-    chip.onclick = () => toggle(id, true);
+    let touchStart, handledTouchUntil = 0;
+    chip.onpointerdown = (e) => {
+      if (e.pointerType === "touch") touchStart = { x: e.clientX, y: e.clientY };
+    };
+    chip.onpointercancel = () => { touchStart = null; };
+    chip.onpointerup = (e) => {
+      if (e.pointerType !== "touch" || !touchStart) return;
+      if (Math.hypot(e.clientX - touchStart.x, e.clientY - touchStart.y) < 8) {
+        // Mobile browsers can suppress the synthetic click just after a pan.
+        handledTouchUntil = performance.now() + 700;
+        toggle(id, true);
+      }
+      touchStart = null;
+    };
+    chip.onclick = (e) => {
+      if (!e.detail || performance.now() > handledTouchUntil) toggle(id, true);
+    };
     $("name-chips").append(chip);
   }
   $("data-notes").textContent =
@@ -224,7 +239,7 @@ function curve(points) {
 }
 function positionGraph() {
   const chips = $("name-chips");
-  const capacity = Math.max(1, Math.floor(chips.clientWidth / (innerWidth < 700 ? 122 : 148)));
+  const capacity = Math.max(1, Math.floor(chips.clientWidth / (innerWidth < 700 ? 100 : 148)));
   const count = roots?.length || 1;
   const columns = Math.ceil(count / Math.ceil(count / capacity));
   chips.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
@@ -263,7 +278,7 @@ function move(target, animate = true) {
 function home(animate = true) {
   if (!layout) return;
   viewMode = "group";
-  const group = layout.nodes.filter((node) => node.root);
+  const group = layout.nodes.filter((node) => node.root || node.student);
   if (!group.length) return fit(animate);
   const left = Math.min(...group.map((node) => node.x - node.width / 2)),
     right = Math.max(...group.map((node) => node.x + node.width / 2)),
@@ -337,6 +352,14 @@ function toggle(id, focus = false) {
 }
 function select(id, focus = false) {
   selected = id;
+  if (focus && innerWidth <= 700) {
+    const node = layout.nodes.find(node => node.id === id);
+    if (node) {
+      const k = Math.max(camera.k, 0.8), h = $("graph").clientHeight;
+      move({ k, x: $("graph").clientWidth / 2 - node.x * k,
+        y: Math.max(60, Math.min(h * 0.3, h - 260)) - node.y * k });
+    }
+  }
   const person = people.get(id),
     ancestors = ancestry(id, people),
     successors = descendants(id, people),
@@ -422,46 +445,60 @@ $("graph").addEventListener(
   },
   { passive: false },
 );
+// Capture gestures even when they start on a name. A tap selects; a drag or
+// two-finger pinch never changes the selection.
+const pointers = new Map();
 $("graph").onpointerdown = (e) => {
-  if (e.button !== 0 || e.target.closest(".node")) return;
+  if (e.pointerType === "mouse" && e.button !== 0) return;
+  e.preventDefault();
   cancelAnimationFrame(animation);
-  drag = {
-    x: e.clientX,
-    y: e.clientY,
-    startX: e.clientX,
-    startY: e.clientY,
-    moved: false,
+  if (!pointers.size) gesture = {
+    startX: e.clientX, startY: e.clientY, moved: false,
+    person: e.target.closest(".node")?.dataset.id,
   };
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size > 1) gesture.moved = true;
   $("graph").setPointerCapture(e.pointerId);
-  $("graph").classList.add("dragging");
 };
 $("graph").onpointermove = (e) => {
-  if (!drag) return;
-  if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > 5)
-    drag.moved = true;
+  if (!pointers.has(e.pointerId)) return;
+  const previous = [...pointers.values()];
+  const old = pointers.get(e.pointerId);
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size >= 2) {
+    const next = [...pointers.values()], rect = $("graph").getBoundingClientRect();
+    const center = (points) => ({ x: (points[0].x + points[1].x) / 2 - rect.left, y: (points[0].y + points[1].y) / 2 - rect.top });
+    const distance = (points) => Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+    const before = center(previous), after = center(next);
+    const k = Math.max(0.015, Math.min(3, camera.k * distance(next) / Math.max(1, distance(previous))));
+    camera = { k, x: after.x - (before.x - camera.x) * k / camera.k, y: after.y - (before.y - camera.y) * k / camera.k };
+    gesture.moved = true;
+  } else {
+    if (Math.hypot(e.clientX - gesture.startX, e.clientY - gesture.startY) > 6) gesture.moved = true;
+    if (!gesture.moved) return;
+    camera.x += e.clientX - old.x;
+    camera.y += e.clientY - old.y;
+  }
   viewMode = "custom";
-  camera.x += e.clientX - drag.x;
-  camera.y += e.clientY - drag.y;
-  drag.x = e.clientX;
-  drag.y = e.clientY;
+  $("graph").classList.add("dragging");
   transform();
 };
-$("graph").onpointerup = (e) => {
-  if (drag) ignoreClick = Boolean(drag.moved);
-  drag = null;
+function endPointer(e, cancelled = false) {
+  if (!pointers.has(e.pointerId)) return;
+  pointers.delete(e.pointerId);
+  if (cancelled) gesture.moved = true;
+  if (pointers.size) return;
+  const tap = !gesture.moved, person = gesture.person;
+  gesture = null;
   $("graph").classList.remove("dragging");
-};
-$("graph").onpointercancel = () => {
-  drag = null;
-  ignoreClick = true;
-  $("graph").classList.remove("dragging");
-};
+  if (tap) person ? toggle(person) : clearSelection();
+}
+$("graph").onpointerup = (e) => endPointer(e);
+$("graph").onpointercancel = (e) => endPointer(e, true);
+$("graph").onlostpointercapture = (e) => endPointer(e, true);
 $("graph").onclick = (e) => {
-  if (ignoreClick) {
-    ignoreClick = false;
-    return;
-  }
-  if (!e.target.closest(".node")) clearSelection();
+  // Screen-reader activation may generate a click without pointer events.
+  if (e.detail === 0 && e.target.closest(".node")) toggle(e.target.closest(".node").dataset.id);
 };
 $("graph").onkeydown = (e) => {
   if (e.key === "Escape") {
@@ -510,8 +547,10 @@ $("reset").onclick = () => {
   setData(original);
   isCMC = true;
   $("shared-only").checked = false;
+  $("include-students").checked = true;
   $("depth").value = "25";
   $("depth-value").textContent = "All";
+  $("depth").setAttribute("aria-valuetext", "All generations");
   draw();
   $("edit-dialog").close();
 };
@@ -599,6 +638,7 @@ $("import").onchange = async () => {
     $("shared-only").checked = false;
     $("depth").value = "25";
     $("depth-value").textContent = "All";
+  $("depth").setAttribute("aria-valuetext", "All generations");
     draw();
     $("edit-dialog").close();
   } catch (e) {
@@ -608,12 +648,16 @@ $("import").onchange = async () => {
   }
 };
 $("options-open").onclick = () => $("options-dialog").showModal();
+let depthTimer;
 $("depth").oninput = () => {
-  $("depth-value").textContent =
-    $("depth").value === "25" ? "All" : $("depth").value;
-  draw();
+  const all = $("depth").value === "25";
+  $("depth-value").textContent = all ? "All" : $("depth").value;
+  $("depth").setAttribute("aria-valuetext", all ? "All generations" : `${$("depth").value} generations`);
+  clearTimeout(depthTimer);
+  depthTimer = setTimeout(draw, 100);
 };
 $("shared-only").onchange = () => draw();
+$("include-students").onchange = () => draw();
 $("find").oninput = () => {
   const query = normalize($("find").value);
   $("search-results").replaceChildren();
@@ -633,23 +677,62 @@ $("poster-open").onclick = () => {
   $("poster-dialog").showModal();
   updatePosterPreview();
 };
+let printCache;
+function printLayout() {
+  const depth = $("poster-depth").value === "all" ? Infinity : Number($("poster-depth").value);
+  const key = JSON.stringify([roots, depth, $("include-students").checked, $("shared-only").checked, selected]);
+  if (printCache?.source === dataset && printCache.key === key) return printCache.layout;
+  const graph = subgraph(people, roots, { depth, includeStudents: $("include-students").checked, sharedOnly: $("shared-only").checked });
+  const ancestors = selected ? ancestry(selected, people) : null;
+  const successors = selected ? descendants(selected, people) : null;
+  for (const n of graph.nodes) {
+    const lines = wrap(n.person.name);
+    n.width = Math.max(140, Math.min(250, Math.max(...lines.map(line => measuringContext.measureText(line).width)) + 28));
+    n.height = Math.max(56, lines.length * 23 + 29);
+    n.selected = n.id === selected;
+    n.color = n.id === selected && selected === "mgp-339304" ? SELECTED_TEAL : n.shared ? CMC_GOLD : CMC_MAROON;
+    n.dim = selected ? !(ancestors.has(n.id) || successors.has(n.id)) : false;
+  }
+  for (const e of graph.edges) e.dim = selected ? !((ancestors.has(e.from) && ancestors.has(e.to)) || (successors.has(e.from) && successors.has(e.to))) : false;
+  const output = buildLayout(graph, roots, 1.5);
+  printCache = { source: dataset, key, layout: output };
+  return output;
+}
+let previewRevision = 0, previewUrl;
 async function updatePosterPreview() {
+  const revision = ++previewRevision;
   try {
-    const { getPosterMetrics } = await import("./poster.js?v=3");
-    const m = getPosterMetrics(layout, $("poster-size").value);
+    const { getPosterMetrics, createPosterSvg } = await import("./poster.js?v=6");
+    const tree = printLayout();
+    const m = getPosterMetrics(tree, $("poster-size").value, "landscape");
     $("poster-dimensions").textContent =
-      `${m.width.toFixed(1)} × ${m.height.toFixed(1)} inches · ${m.nameSize.toFixed(1)} pt names`;
+      `${$("poster-depth").value === "all" ? "All" : $("poster-depth").value} generations · ${m.width.toFixed(1)} × ${m.height.toFixed(1)} inches · ${m.nameSize.toFixed(1)} pt names${m.nameSize < 8 ? ". Choose Size to fit for larger text." : ""}`;
+    $("poster-layout-note").hidden = m.layoutMode !== "landscape";
+    const preview = await createPosterSvg(tree, {
+      title: $("poster-title").value || "PhD Genealogy Tree",
+      size: $("poster-size").value, layoutMode: "landscape",
+    });
+    if (revision !== previewRevision || !$("poster-dialog").open) return;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = URL.createObjectURL(new Blob([preview], { type: "image/svg+xml" }));
+    $("poster-preview").src = previewUrl;
+    $("poster-preview").hidden = false;
   } catch {
     $("poster-dimensions").textContent = "";
   }
 }
 $("poster-size").onchange = updatePosterPreview;
+$("poster-depth").onchange = updatePosterPreview;
+$("poster-title").onchange = updatePosterPreview;
+$("poster-format").onchange = () => {
+  $("download").textContent = `Download ${$("poster-format").value.toUpperCase()} ↓`;
+};
 async function download(kind) {
-  const button = $(kind === "pdf" ? "pdf" : "svg-export");
+  const button = $("download");
   button.disabled = true;
   $("export-status").textContent = "Preparing…";
   try {
-    const exporter = await import("./poster.js?v=3");
+    const exporter = await import("./poster.js?v=6");
     const options = {
       title: $("poster-title").value || "PhD Genealogy Tree",
       subtitle: selected
@@ -658,10 +741,12 @@ async function download(kind) {
           ? "Claremont McKenna College · Mathematical Sciences"
           : roots.map((id) => people.get(id).name).join(" · "),
       size: $("poster-size").value,
+      layoutMode: "landscape",
       sourceDate: dataset.updated,
     };
+    options.subtitle += ` · ${$("poster-depth").value === "all" ? "All recorded generations" : $("poster-depth").value + " generations of ancestry"}`;
     await (kind === "pdf" ? exporter.exportPoster : exporter.exportSvg)(
-      layout,
+      printLayout(),
       options,
     );
     $("export-status").textContent = "Ready.";
@@ -671,8 +756,7 @@ async function download(kind) {
     button.disabled = false;
   }
 }
-$("pdf").onclick = () => download("pdf");
-$("svg-export").onclick = () => download("svg");
+$("download").onclick = () => download($("poster-format").value);
 const startupControls = ["edit-open", "options-open", "poster-open"];
 startupControls.forEach((id) => ($(id).disabled = true));
 try {

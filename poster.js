@@ -1,5 +1,6 @@
 // Vector exports share one drawing routine. Fonts are local, including accented names.
 import { jsPDF } from "./vendor/jspdf.es.min.js";
+import { preparePosterLayout } from "./poster-layout.js";
 
 const C = {
   paper: "#fcfaf5",
@@ -9,12 +10,12 @@ const C = {
   plum: "#9e7c0a",
   border: "#ded9e2",
 };
-const NAME_SIZE = 16;
+const NAME_SIZE = 20;
 let fontsPromise;
 function fontData() {
   if (!fontsPromise)
     fontsPromise = Promise.all(
-      ["Lora-400", "Lora-600"].map(async (name) => {
+      ["Lora-400", "Lora-600", "DejaVuSans", "DejaVuSans-Bold"].map(async (name) => {
         const response = await fetch(
           new URL(`./assets/fonts/${name}.ttf`, import.meta.url),
         );
@@ -65,11 +66,14 @@ function pageSize(layout, size) {
   return [36 * 72, 24 * 72];
 }
 
-export function getPosterMetrics(layout, size) {
+export function getPosterMetrics(layout, size, layoutMode = 'vertical') {
+  layout = preparePosterLayout(layout, { mode: layoutMode, size });
   const [width, height] = pageSize(layout, size);
   return {
     width: width / 72,
     height: height / 72,
+    layoutMode: layout.posterLayout || 'vertical',
+    continuationCount: layout.continuationCount || 0,
     nameSize:
       NAME_SIZE *
       Math.min((width - 144) / layout.width, (height - 308) / layout.height),
@@ -97,6 +101,7 @@ async function drawPoster(layout, options = {}) {
   if (!layout.nodes?.length || !(layout.width > 0) || !(layout.height > 0)) {
     throw new Error("Choose at least one person before exporting a poster.");
   }
+  layout = preparePosterLayout(layout, { mode: options.layoutMode, size: options.size });
   const [width, height] = pageSize(layout, options.size);
   const doc = new jsPDF({
     orientation: width >= height ? "landscape" : "portrait",
@@ -106,11 +111,17 @@ async function drawPoster(layout, options = {}) {
     putOnlyUsedFonts: true,
   });
   const fonts = await fontData();
-  ["normal", "bold"].forEach((style, i) => {
-    const file = `genealogy-${style}.ttf`;
+  ["normal", "bold", "normal", "bold"].forEach((style, i) => {
+    const file = `genealogy-${i}-${style}.ttf`;
     doc.addFileToVFS(file, fonts[i]);
-    doc.addFont(file, "Genealogy", style);
+    doc.addFont(file, i < 2 ? "Genealogy" : "GenealogyFallback", style);
   });
+  function fontFor(value, bold = false) {
+    doc.setFont('Genealogy', bold ? 'bold' : 'normal');
+    const font = doc.internal.getFont().metadata;
+    return [...clean(value)].some(char => !font.characterToGlyph(char.codePointAt(0)))
+      ? 'GenealogyFallback' : 'Genealogy';
+  }
   const title = clean(options.title || "PhD Genealogy Tree");
   doc.setProperties({
     title,
@@ -181,19 +192,21 @@ async function drawPoster(layout, options = {}) {
     color = C.ink,
     bold = false,
     align = "left",
+    family,
   ) {
     const content = clean(value);
     if (!content) return;
-    doc.setFont("Genealogy", bold ? "bold" : "normal");
+    family ||= fontFor(content, bold);
+    doc.setFont(family, bold ? "bold" : "normal");
     doc.setFontSize(fontSize);
     doc.setTextColor(color);
     doc.text(content, x, y, { align });
     svg.push(
-      `<text x="${x}" y="${y}" font-size="${fontSize}" fill="${color}" font-weight="${bold ? 700 : 400}" text-anchor="${align === "center" ? "middle" : align === "right" ? "end" : "start"}">${escapeXml(content)}</text>`,
+      `<text x="${x}" y="${y}" font-size="${fontSize}" fill="${color}" font-weight="${bold ? 700 : 400}" style="font-family:${family},serif" text-anchor="${align === "center" ? "middle" : align === "right" ? "end" : "start"}">${escapeXml(content)}</text>`,
     );
   }
   function fit(value, fontSize, maxWidth, bold = false) {
-    doc.setFont("Genealogy", bold ? "bold" : "normal");
+    doc.setFont(fontFor(value, bold), bold ? "bold" : "normal");
     doc.setFontSize(fontSize);
     const content = clean(value);
     return Math.min(
@@ -227,14 +240,14 @@ async function drawPoster(layout, options = {}) {
     "center",
   );
   const legendY = 175;
-  ["#397d80", "#ad7059", "#6d7e46"].forEach((ink, index) =>
-    circle(margin + index * 7, legendY - 3, 2.4, ink),
-  );
+  circle(margin + 4, legendY - 3, 3, '#981a31');
   text("Selected people", margin + 24, legendY, 9, C.muted);
   circle(margin + 170, legendY - 3, 3, C.plum);
   text("Shared ancestors", margin + 182, legendY, 9, C.muted);
   text(
-    "Advisors above · students below",
+    layout.continuations?.length
+      ? "Read down each column · match numbered circles across columns"
+      : "Advisors above · students below",
     width - margin,
     legendY,
     9,
@@ -283,33 +296,38 @@ async function drawPoster(layout, options = {}) {
     );
   };
   const byId = new Map(layout.nodes.map((node) => [node.id, node]));
+  for (const panel of layout.panels || []) {
+    const position = mapPoint({ x: panel.x + 36, y: 24 });
+    text(panel.label, position.x, position.y, 15 * scale, C.muted);
+  }
   for (const edge of layout.edges || []) {
     const ink = edge.color || byId.get(edge.to)?.color;
-    curve(
-      (edge.points || []).map(mapPoint),
-      soften(ink, edge.dim ? 0.08 : 0.38),
-      Math.max(0.35, 1.05 * scale),
-    );
+    for (const points of edge.segments || [edge.points || []])
+      curve(points.map(mapPoint), soften(ink, edge.dim ? 0.08 : 0.38), Math.max(0.35, 1.05 * scale));
+  }
+  for (const marker of layout.continuations || []) {
+    const position = mapPoint(marker);
+    circle(position.x, position.y, 11 * scale, C.muted, true);
+    text(marker.label, position.x, position.y + 4 * scale, 11 * scale, C.ink, false, 'center');
   }
 
   for (const node of layout.nodes) {
+    svg.push(`<g data-person-id="${escapeXml(node.id)}">`);
     const person = node.person || node;
     const center = mapPoint(node),
       w = node.width * scale,
       h = node.height * scale;
     const y = center.y - h / 2;
     const ink = node.dim ? soften(node.color, 0.15) : color(node.color);
-    let nameSize = NAME_SIZE * scale,
-      lines;
+    const labelColor = node.selected || color(node.color) === '#087f7a' ? '#087f7a' : node.root ? '#981a31' : C.ink;
+    const nameInk = node.dim ? soften(labelColor, 0.15) : labelColor;
+    const nameSize = NAME_SIZE * scale;
     const name = clean(person.name || "Unknown");
-    // Preserve complete names; wrap and shrink only when they need extra space.
-    do {
-      doc.setFont("Genealogy", node.root ? "bold" : "normal");
-      doc.setFontSize(nameSize);
-      lines = doc.splitTextToSize(name, w - 18 * scale);
-      if (lines.length <= 3) break;
-      nameSize *= 0.9;
-    } while (nameSize > 3 * scale);
+    const nameFamily = fontFor(name, node.root);
+    // Names share one type size throughout the poster; long names wrap.
+    doc.setFont(nameFamily, node.root ? "bold" : "normal");
+    doc.setFontSize(nameSize);
+    const lines = doc.splitTextToSize(name, w - 18 * scale);
     const lineHeight = nameSize * 1.15;
     const nameY =
       y +
@@ -330,35 +348,25 @@ async function drawPoster(layout, options = {}) {
         center.x,
         nameY + i * lineHeight,
         nameSize,
-        ink,
+        nameInk,
         Boolean(node.root),
         "center",
+        nameFamily,
       ),
     );
-    const detail = [person.year, person.institution]
-      .filter(Boolean)
-      .join(" · ");
-    let detailSize = 7.5 * scale,
-      detailLines;
-    do {
-      doc.setFont("Genealogy", "normal");
-      doc.setFontSize(detailSize);
-      detailLines = doc.splitTextToSize(clean(detail), w - 18 * scale);
-      if (detailLines.length <= 2) break;
-      detailSize *= 0.9;
-    } while (detailSize > 3 * scale);
-    const detailY = nameY + (lines.length - 1) * lineHeight + 14 * scale;
-    detailLines.forEach((line, index) =>
+    const detailSize = 12 * scale;
+    const detailY = nameY + (lines.length - 1) * lineHeight + 18 * scale;
+    if (person.year != null)
       text(
-        line,
+        person.year,
         center.x,
-        detailY + index * detailSize * 1.2,
+        detailY,
         detailSize,
-        node.dim ? soften(C.muted, 0.15) : C.muted,
+        node.dim ? soften('#605d66', 0.15) : '#605d66',
         false,
         "center",
-      ),
-    );
+      );
+    svg.push('</g>');
   }
 
   path(
@@ -409,7 +417,7 @@ async function drawPoster(layout, options = {}) {
   const fontStyles = fonts
     .map(
       (font, i) =>
-        `@font-face{font-family:Genealogy;src:url(data:font/ttf;base64,${font}) format('truetype');font-weight:${i ? 700 : 400}}`,
+        `@font-face{font-family:${i < 2 ? 'Genealogy' : 'GenealogyFallback'};src:url(data:font/ttf;base64,${font}) format('truetype');font-weight:${i % 2 ? 700 : 400}}`,
     )
     .join("");
   const svgDocument = `<svg xmlns="http://www.w3.org/2000/svg" width="${width / 72}in" height="${height / 72}in" viewBox="0 0 ${width} ${height}"><title>${escapeXml(title)}</title><style>${fontStyles}text{font-family:Genealogy,sans-serif}</style>${svg.join("")}</svg>`;
@@ -419,6 +427,11 @@ async function drawPoster(layout, options = {}) {
 /** Returns jsPDF for callers needing bytes or a preview instead of a download. */
 export async function createPosterDocument(layout, options = {}) {
   return (await drawPoster(layout, options)).doc;
+}
+
+/** Returns the standalone SVG text without triggering a browser download. */
+export async function createPosterSvg(layout, options = {}) {
+  return (await drawPoster(layout, options)).svg;
 }
 
 /** Downloads a single-page PDF with vector lines, searchable text, and embedded fonts. */

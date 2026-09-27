@@ -110,3 +110,20 @@ test("descendant highlighting follows students without pulling in their other ad
   assert.deepEqual([...descendants("c", people)].sort(), ["a", "b", "c"]);
   assert.deepEqual([...descendants("e", people)].sort(), ["a", "b", "c", "d", "e"]);
 });
+
+test("direct students and their co-advisors are optional; unrelated descendants stay out", () => {
+  const extended = new Map([...people,
+    ["s", {id:"s", name:"Student", advisors:["a", "x"]}],
+    ["x", {id:"x", name:"Co-advisor", advisors:[]}],
+    ["ss", {id:"ss", name:"Grandstudent", advisors:["s"]}],
+  ]);
+  const base = subgraph(extended, ["a"]);
+  assert(!base.nodes.some(n => n.id === "s"));
+  const full = subgraph(extended, ["a"], {includeStudents:true});
+  assert(full.nodes.some(n => n.id === "s" && n.student));
+  assert(full.nodes.some(n => n.id === "x"));
+  assert(!full.nodes.some(n => n.id === "ss"));
+  assert(full.edges.some(e => e.from === "x" && e.to === "s"));
+  assert.equal(full.membership.has("x"), false);
+  assert.equal(full.nodes.filter(n => n.root).length, 1);
+});

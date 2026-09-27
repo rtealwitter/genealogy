@@ -8,7 +8,7 @@
       content="Explore your shared mathematical ancestry. An interactive PhD genealogy tree with printable vector posters."
     />
     <title>PhD Genealogy Tree</title>
-    <link rel="stylesheet" href="style.css?v=4" />
+    <link rel="stylesheet" href="style.css?v=6" />
   </head>
   <body>
     <header>
@@ -70,7 +70,7 @@
         </svg>
       </button>
       <span class="separator"></span>
-      <button id="poster-open" title="Export poster" aria-label="Export poster">
+      <button id="poster-open" title="Download tree" aria-label="Download tree">
         <svg viewBox="0 0 24 24">
           <path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" />
         </svg>
@@ -87,6 +87,10 @@
         </svg>
       </button>
     </nav>
+    <aside class="generation-control" aria-label="Visible ancestry depth">
+      <label for="depth">Generations <output id="depth-value" for="depth">All</output></label>
+      <input id="depth" type="range" min="1" max="25" value="25" aria-valuetext="All generations" />
+    </aside>
     <dialog id="edit-dialog">
       <form method="dialog">
         <button class="dialog-close" aria-label="Close">×</button>
@@ -119,12 +123,11 @@
       <label for="find">Find a person</label
       ><input id="find" type="search" placeholder="Name…" autocomplete="off" />
       <div id="search-results"></div>
+      <label class="toggle"><input id="include-students" type="checkbox" checked /> Include students</label>
       <label class="toggle"
         ><input id="shared-only" type="checkbox" /> Shared connections
         only</label
-      ><label for="depth" class="depth-label"
-        >Generations <span id="depth-value">All</span></label
-      ><input id="depth" type="range" min="1" max="25" value="25" />
+      >
       <div id="data-notes" class="quiet"></div>
       <details>
         <summary>Sources & about</summary>
@@ -158,25 +161,35 @@
       <form method="dialog">
         <button class="dialog-close" aria-label="Close">×</button>
       </form>
-      <label for="poster-title">Poster title</label
-      ><input
-        id="poster-title"
-        value="PhD Genealogy Tree"
-        maxlength="100"
-      /><label for="poster-size">Paper size</label
-      ><select id="poster-size">
-        <option value="readable">Size to fit · readable names</option>
-        <option value="auto">36-inch long edge</option>
-        <option value="arch-d">36 × 24 inches</option>
-        <option value="a1">A1 landscape</option>
+      <label for="poster-format">Download tree</label>
+      <select id="poster-format">
+        <option value="pdf">PDF · printing</option>
+        <option value="svg">SVG · editing and scaling</option>
       </select>
+      <img id="poster-preview" alt="Preview of the downloaded tree" hidden />
       <p id="poster-dimensions" class="quiet"></p>
+      <p id="poster-layout-note" class="quiet" hidden>Matching numbered markers connect the panels.</p>
+      <details class="print-options">
+        <summary>Print options</summary>
+        <label for="poster-depth">Generations back</label>
+        <select id="poster-depth">
+          <option value="12">12 generations</option>
+          <option value="6">6 generations</option>
+          <option value="all">All generations</option>
+        </select>
+        <label for="poster-size">Paper</label>
+        <select id="poster-size">
+          <option value="arch-d">36 × 24 inches</option>
+          <option value="readable">Size to fit · readable names</option>
+        </select>
+        <label for="poster-title">Title</label>
+        <input id="poster-title" value="PhD Genealogy Tree" maxlength="100" />
+      </details>
       <div class="dialog-actions">
-        <button id="svg-export">SVG ↓</button
-        ><button id="pdf" class="primary">Download PDF ↓</button>
+        <button id="download" class="primary">Download PDF ↓</button>
       </div>
       <p id="export-status" class="status" role="status"></p>
     </dialog>
-    <script type="module" src="app.js?v=5"></script>
+    <script type="module" src="app.js?v=6"></script>
   </body>
 </html>

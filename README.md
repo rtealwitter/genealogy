@@ -4,9 +4,11 @@ An interactive atlas of mathematical advisor relationships, with Claremont McKen
 
 **[Explore the website](https://www.rtealwitter.com/genealogy/)**
 
-The opening view frames the selected group, keeping their names readable; the home button returns to it, and the full-tree button shows all ancestry. Drag to pan, scroll to zoom, and click a person or their name chip to highlight their ancestors and descendants without moving the tree. Click the same person again, or empty background, to restore everyone. Multiple advisors and shared ancestors are preserved. Search within the graph, choose a generation limit, or focus on shared ancestry. Each person links to the sources for their record.
+The opening view frames the selected group, keeping their names readable; the home button returns to it, and the full-tree button shows all ancestry. Drag to pan, scroll to zoom, and click a person or their name chip to highlight their ancestors and descendants without moving the tree. Click the same person again, or empty background, to restore everyone. Multiple advisors and shared ancestors are preserved. Use the bottom-right generation slider to limit ancestry, search within the graph, or focus on shared ancestry. On phones, drag from anywhere on the graph (including names), pinch with two fingers to zoom, and tap a name in the top box for a readable close-up. Each person links to the sources for their record.
 
-The **Export poster** button exports the current graph as a single-page vector PDF or SVG: a size that keeps names readable, 36 × 24 inches, A1, or a proportional 36-inch sheet. The dialog shows the paper dimensions and approximate text size before downloading. PDF names remain searchable and accented characters are embedded. A large graph may need larger paper for comfortable reading; the vector files scale without losing sharpness.
+The **Download tree** button offers PDF or SVG, with a preview. Printing defaults to **12 generations plus direct students on a 36 × 24-inch page**, with uniform full names and degree years. The interactive generation slider does not change this print setting. Expand **Print options** for 6 generations, all generations, a custom size that keeps names readable, or a different title. Long trees are folded into side-by-side panels only when that improves fit; matching numbered markers continue the same relationships between panels. Both formats are vectors, with embedded fonts and complete names. The preview reports paper dimensions and name size before downloading.
+
+The default collection includes 13 documented direct students of the CMC faculty, along with their co-advisors and ancestry. Student links are confirmed on each student's MGP record; see the [student audit](data/STUDENTS-AUDIT.md). The **Include students** option hides or shows these existing records without a network lookup. Live searches for new names retrieve ancestry; the Python importer's `--include-students` option can build other collections with direct students.
 
 ## Adding new people
 
@@ -18,7 +20,7 @@ You can also **Import genealogy JSON**. The [Python importer](scripts/README.md)
 
 ```sh
 python3 -m pip install -r requirements.txt
-python3 scripts/fetch_genealogy.py --overlay data/cmc-roots.json --output data/genealogy.json --max-people 1000
+python3 scripts/fetch_genealogy.py --overlay data/cmc-roots.json --output data/genealogy.json --max-people 1000 --include-students
 ```
 
 Mike Izbicki is included using the advisor relationship in his official CV, followed by Christian Shelton’s MGP ancestry. See [data provenance](data/README.md). This is an independent project; please credit and support the [Mathematics Genealogy Project](https://www.mathgenealogy.org/). Historical links can describe mentorship rather than modern PhD supervision. An empty advisor list is a limit of the included record, not evidence that a person had no advisor.
