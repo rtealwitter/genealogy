@@ -663,7 +663,7 @@ let previewRevision = 0, previewUrl;
 async function updatePosterPreview() {
   const revision = ++previewRevision;
   try {
-    const { getPosterMetrics, createPosterSvg } = await import("./poster.js?v=8");
+    const { getPosterMetrics, createPosterSvg } = await import("./poster.js?v=9");
     const tree = printLayout();
     const m = getPosterMetrics(tree, $("poster-size").value, "landscape");
     $("poster-dimensions").textContent =
@@ -690,7 +690,7 @@ async function download(kind) {
   button.disabled = true;
   $("export-status").textContent = "Preparing…";
   try {
-    const exporter = await import("./poster.js?v=8");
+    const exporter = await import("./poster.js?v=9");
     await (kind === "pdf" ? exporter.exportPoster : exporter.exportSvg)(
       printLayout(),
       posterOptions(),

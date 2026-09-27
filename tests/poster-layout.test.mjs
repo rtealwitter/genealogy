@@ -73,3 +73,35 @@ test('PDF and SVG preserve the complete graph as vectors and keep a uniform name
     assert.ok(!svg.includes('University of Michigan'));
   } finally { globalThis.fetch = previousFetch; }
 });
+
+
+test('poster dots meet advisor lines and leave room above short, wrapped, and accented names', async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async url => new Response(fs.readFileSync(url));
+  try {
+    const nodes = [
+      { id: 'short', person: { name: 'Robert Cass' }, width: 140, height: 56, root: true },
+      { id: 'wrapped', person: { name: 'Charles Terrence Clegg (Terry) Wall' }, width: 180, height: 98 },
+      { id: 'accented', person: { name: 'Étienne Bézout' }, width: 180, height: 75, root: true },
+    ];
+    const tree = buildLayout({ nodes, edges: [{ from: 'short', to: 'wrapped' }, { from: 'wrapped', to: 'accented' }] });
+    const svg = await createPosterSvg(tree, { size: 'readable' });
+    const attr = (tag, name) => Number(tag.match(new RegExp(`${name}="([^" ]+)"`))[1]);
+    const circles = new Map();
+    for (const [, id, group] of svg.matchAll(/<g data-person-id="([^"]+)">([\s\S]*?)<\/g>/g)) {
+      const dot = group.match(/<circle[^>]+>/)[0];
+      const text = group.match(/<text[^>]+>/)[0];
+      // Reserve a full font em above the baseline, including the dot's stroke.
+      const dotBottom = attr(dot, 'cy') + attr(dot, 'r') + attr(dot, 'stroke-width') / 2;
+      assert.ok(attr(text, 'y') - dotBottom >= attr(text, 'font-size'), `${id}: dot crowds the name`);
+      circles.set(id, { x: attr(dot, 'cx'), y: attr(dot, 'cy') });
+    }
+    assert.equal(circles.size, nodes.length);
+    const paths = [...svg.matchAll(/<path d="([^"]+)"/g)];
+    tree.edges.forEach((edge, i) => {
+      const [x, y] = paths[i][1].trim().split(/\s+/).slice(-2).map(Number);
+      const dot = circles.get(edge.to);
+      assert.ok(Math.abs(x - dot.x) < 1e-8 && Math.abs(y - dot.y) < 1e-8, 'advisor line must end at the dot');
+    });
+  } finally { globalThis.fetch = previousFetch; }
+});

@@ -271,15 +271,12 @@ async function drawPoster(layout, options = {}) {
     doc.setFontSize(nameSize);
     const lines = doc.splitTextToSize(name, w - 18 * scale);
     const lineHeight = nameSize * 1.15;
-    const nameY =
-      y +
-      Math.max(
-        22 * scale,
-        (h - (lines.length - 1) * lineHeight) / 2 - 7 * scale,
-      );
+    // Match the screen: the dot sits at the incoming edge endpoint, and
+    // the first baseline stays a fixed distance below it, even for wrapped names.
+    const nameY = y + 25 * scale;
     circle(
       center.x,
-      y + 5 * scale,
+      y,
       (node.root ? 3.6 : 2.5) * scale,
       ink,
       person.incomplete,
